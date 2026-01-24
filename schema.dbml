@@ -1,0 +1,146 @@
+// Worker Compensation System Schema
+// This schema supports a remittance system where workers are paid based on recorded time segments
+// and adjustments, with support for retroactive changes and failed payment retries.
+
+Table user {
+  id uuid [pk, note: 'Primary key']
+  email varchar(255) [unique, not null, note: 'Worker email address']
+  full_name varchar(255) [note: 'Worker full name']
+  hashed_password text [not null, note: 'Hashed password for authentication']
+  is_active boolean [default: true, note: 'Account active status']
+  is_superuser boolean [default: false, note: 'Admin privileges']
+  
+  Note: 'Workers/users who receive compensation'
+}
+
+Table item {
+  id uuid [pk]
+  owner_id uuid [ref: > user.id, not null]
+  title varchar(255) [not null]
+  description varchar(255)
+  
+  Note: 'Example entity from starter template (not part of compensation logic)'
+}
+
+Table worklog {
+  id uuid [pk, note: 'Primary key']
+  user_id uuid [ref: > user.id, not null, note: 'Worker who owns this worklog']
+  title varchar(255) [not null, note: 'Worklog title/name']
+  description varchar(500) [note: 'Optional description']
+  hourly_rate_cents int [not null, note: 'Hourly rate in cents (e.g., 5000 = $50/hour)']
+  created_at timestamptz [not null, default: `now()`, note: 'When worklog was created']
+  
+  Note: 'Container for all work done against a specific task/project'
+}
+
+Table time_segment {
+  id uuid [pk, note: 'Primary key']
+  worklog_id uuid [ref: > worklog.id, not null, note: 'Parent worklog']
+  user_id uuid [ref: > user.id, not null, note: 'Worker who recorded this time']
+  started_at timestamptz [not null, note: 'When work started']
+  ended_at timestamptz [not null, note: 'When work ended']
+  minutes int [not null, note: 'Duration in minutes']
+  hourly_rate_cents int [not null, note: 'Rate at time of recording (cents)']
+  amount_cents int [not null, note: 'Calculated payment for this segment (cents)']
+  status enum(RECORDED, REMOVED) [default: 'RECORDED', note: 'RECORDED=valid work, REMOVED=disputed/deleted']
+  settlement_status enum(UNREMITTED, REMITTED) [default: 'UNREMITTED', note: 'UNREMITTED=not yet paid, REMITTED=already paid']
+  remittance_id uuid [ref: > remittance.id, note: 'Which remittance paid this segment (null if unpaid)']
+  created_at timestamptz [not null, default: `now()`, note: 'When segment was recorded']
+  
+  Indexes {
+    (worklog_id, settlement_status) [note: 'Fast lookup of unpaid work']
+    (user_id, settlement_status) [note: 'User remittance queries']
+    status [note: 'Filter by RECORDED/REMOVED']
+  }
+  
+  Note: 'Individual time entries - can be added/removed after payment'
+}
+
+Table adjustment {
+  id uuid [pk, note: 'Primary key']
+  worklog_id uuid [ref: > worklog.id, not null, note: 'Parent worklog']
+  user_id uuid [ref: > user.id, not null, note: 'Worker affected by adjustment']
+  amount_cents int [not null, note: 'Positive for credit/bonus, negative for deduction']
+  adjustment_type enum(CREDIT, DEDUCTION) [default: 'CREDIT', note: 'Type of adjustment']
+  reason varchar(500) [note: 'Explanation for adjustment']
+  settlement_status enum(UNREMITTED, REMITTED) [default: 'UNREMITTED', note: 'UNREMITTED=not yet paid, REMITTED=already paid']
+  remittance_id uuid [ref: > remittance.id, note: 'Which remittance included this adjustment']
+  created_at timestamptz [not null, default: `now()`, note: 'When adjustment was created']
+  
+  Indexes {
+    (worklog_id, settlement_status) [note: 'Fast lookup of unpaid adjustments']
+    (user_id, settlement_status) [note: 'User remittance queries']
+  }
+  
+  Note: 'Retroactive adjustments - bonuses, deductions, corrections to already-paid work'
+}
+
+Table remittance {
+  id uuid [pk, note: 'Primary key']
+  user_id uuid [ref: > user.id, not null, note: 'Worker receiving payment']
+  period_start date [not null, note: 'Start of payment period']
+  period_end date [not null, note: 'End of payment period']
+  status enum(PENDING, SUCCESS, FAILED, CANCELLED) [default: 'PENDING', note: 'Payment status']
+  gross_amount_cents int [default: 0, note: 'Total before deductions (segments + positive adjustments)']
+  net_amount_cents int [default: 0, note: 'Final payment amount (can be negative)']
+  failure_reason varchar(255) [note: 'Reason if status=FAILED/CANCELLED']
+  created_at timestamptz [not null, default: `now()`, note: 'When remittance was created']
+  finalized_at timestamptz [note: 'When payment was attempted/completed']
+  
+  Indexes {
+    (user_id, period_start, period_end) [note: 'Lookup remittances by user and period']
+    status [note: 'Filter by payment status']
+  }
+  
+  Note: 'Single payout per user for a given period - settlement run result'
+}
+
+Table remittance_line {
+  id uuid [pk, note: 'Primary key']
+  remittance_id uuid [ref: > remittance.id, not null, note: 'Parent remittance']
+  user_id uuid [ref: > user.id, not null, note: 'Worker (denormalized for queries)']
+  worklog_id uuid [ref: > worklog.id, not null, note: 'Worklog (denormalized for queries)']
+  source_id uuid [not null, note: 'ID of time_segment or adjustment']
+  source_type enum(TIME_SEGMENT, ADJUSTMENT) [not null, note: 'Type of source entry']
+  amount_cents int [not null, note: 'Amount from this specific entry']
+  created_at timestamptz [not null, default: `now()`, note: 'When line was created']
+  
+  Indexes {
+    (remittance_id) [note: 'Lookup all lines for a remittance']
+    (source_id, source_type) [note: 'Trace which remittance paid a specific entry']
+  }
+  
+  Note: 'Audit trail - links each segment/adjustment to the remittance that paid it'
+}
+
+// Key Relationships and Business Rules:
+// 
+// 1. TIME SEGMENTS
+//    - Multiple independent segments per worklog
+//    - Can be REMOVED after payment (status=REMOVED)
+//    - Only RECORDED + UNREMITTED segments are eligible for new remittances
+//    - Once paid (REMITTED), segment is linked to remittance_id
+//
+// 2. ADJUSTMENTS
+//    - Retroactive corrections to work (bonuses, deductions, quality issues)
+//    - Can be applied to already-settled work (creates new UNREMITTED adjustment)
+//    - Negative amount_cents = deduction, positive = credit
+//    - Processed in next remittance cycle
+//
+// 3. REMITTANCES
+//    - One remittance per user per settlement run
+//    - gross_amount = time segments + positive adjustments only
+//    - net_amount = time segments + all adjustments (can be negative)
+//    - Only SUCCESS status marks entries as REMITTED
+//    - FAILED status leaves entries UNREMITTED for retry
+//
+// 4. SETTLEMENT STATUS FLOW
+//    - New work: settlement_status = UNREMITTED
+//    - After successful payment: settlement_status = REMITTED, remittance_id set
+//    - After failed payment: settlement_status stays UNREMITTED (no remittance_id)
+//    - Prevents double-payment: Query filters WHERE settlement_status = 'UNREMITTED'
+//
+// 5. REMITTANCE LINES
+//    - Complete audit trail of what was paid in each remittance
+//    - One line per time_segment or adjustment included
+//    - Links back to original source via source_id + source_type

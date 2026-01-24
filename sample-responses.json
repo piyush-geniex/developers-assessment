@@ -1,0 +1,333 @@
+{
+  "endpoint_1_generate_remittances_for_all_users": {
+    "description": "POST /api/v1/remittances/generate-remittances-for-all-users - Generates remittances for all users based on eligible unremitted work",
+    "examples": {
+      "successful_remittance_with_segments_and_adjustments": {
+        "description": "Worker has 3.5 hours of work ($175) + $25 bonus - $5 deduction = $195 net",
+        "request": {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-31",
+          "payout_status": "SUCCESS",
+          "dry_run": false
+        },
+        "response": {
+          "remittances": [
+            {
+              "id": "6b82e999-9f9b-4d18-8c62-7e8c1f3c1a10",
+              "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+              "period_start": "2026-01-01",
+              "period_end": "2026-01-31",
+              "status": "SUCCESS",
+              "gross_amount_cents": 20000,
+              "net_amount_cents": 19500,
+              "failure_reason": null,
+              "created_at": "2026-01-24T10:30:00Z",
+              "finalized_at": "2026-01-24T10:30:00Z"
+            }
+          ],
+          "attempted_user_ids": [
+            "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3"
+          ],
+          "dry_run": false
+        }
+      },
+      "failed_remittance": {
+        "description": "Payment attempt fails - segments/adjustments stay UNREMITTED for retry",
+        "request": {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-31",
+          "payout_status": "FAILED",
+          "dry_run": false
+        },
+        "response": {
+          "remittances": [
+            {
+              "id": "8a93f111-0a0a-5e29-9d73-8b3f946dd1b21",
+              "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+              "period_start": "2026-01-01",
+              "period_end": "2026-01-31",
+              "status": "FAILED",
+              "gross_amount_cents": 20000,
+              "net_amount_cents": 19500,
+              "failure_reason": "Payout marked as failed",
+              "created_at": "2026-01-24T10:45:00Z",
+              "finalized_at": "2026-01-24T10:45:00Z"
+            }
+          ],
+          "attempted_user_ids": [
+            "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3"
+          ],
+          "dry_run": false
+        }
+      },
+      "dry_run_preview": {
+        "description": "Preview mode - calculates remittances without saving to database",
+        "request": {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-31",
+          "dry_run": true
+        },
+        "response": {
+          "remittances": [
+            {
+              "id": "9c04g222-1b1b-6f30-0e84-9c4g057ee2c32",
+              "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+              "period_start": "2026-01-01",
+              "period_end": "2026-01-31",
+              "status": "SUCCESS",
+              "gross_amount_cents": 20000,
+              "net_amount_cents": 19500,
+              "failure_reason": null,
+              "created_at": "2026-01-24T11:00:00Z",
+              "finalized_at": "2026-01-24T11:00:00Z"
+            }
+          ],
+          "attempted_user_ids": [
+            "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3"
+          ],
+          "dry_run": true
+        }
+      },
+      "empty_response_no_unremitted_work": {
+        "description": "All work already remitted or no eligible work found",
+        "request": {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-31",
+          "dry_run": false
+        },
+        "response": {
+          "remittances": [],
+          "attempted_user_ids": [],
+          "dry_run": false
+        }
+      },
+      "multiple_users": {
+        "description": "Processing remittances for multiple users in one run",
+        "request": {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-31",
+          "payout_status": "SUCCESS",
+          "dry_run": false
+        },
+        "response": {
+          "remittances": [
+            {
+              "id": "1a1a1111-1111-1111-1111-111111111111",
+              "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+              "period_start": "2026-01-01",
+              "period_end": "2026-01-31",
+              "status": "SUCCESS",
+              "gross_amount_cents": 20000,
+              "net_amount_cents": 19500,
+              "failure_reason": null,
+              "created_at": "2026-01-24T12:00:00Z",
+              "finalized_at": "2026-01-24T12:00:00Z"
+            },
+            {
+              "id": "2b2b2222-2222-2222-2222-222222222222",
+              "user_id": "d8g37d17-46d5-5bg8-0c78-9b3f946ee2d4",
+              "period_start": "2026-01-01",
+              "period_end": "2026-01-31",
+              "status": "SUCCESS",
+              "gross_amount_cents": 15000,
+              "net_amount_cents": 13000,
+              "failure_reason": null,
+              "created_at": "2026-01-24T12:00:01Z",
+              "finalized_at": "2026-01-24T12:00:01Z"
+            }
+          ],
+          "attempted_user_ids": [
+            "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+            "d8g37d17-46d5-5bg8-0c78-9b3f946ee2d4"
+          ],
+          "dry_run": false
+        }
+      },
+      "negative_net_amount": {
+        "description": "Worker owes money due to deductions exceeding earnings",
+        "request": {
+          "period_start": "2026-01-01",
+          "period_end": "2026-01-31",
+          "payout_status": "SUCCESS",
+          "dry_run": false
+        },
+        "response": {
+          "remittances": [
+            {
+              "id": "3c3c3333-3333-3333-3333-333333333333",
+              "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+              "period_start": "2026-01-01",
+              "period_end": "2026-01-31",
+              "status": "SUCCESS",
+              "gross_amount_cents": 5000,
+              "net_amount_cents": -12000,
+              "failure_reason": null,
+              "created_at": "2026-01-24T13:00:00Z",
+              "finalized_at": "2026-01-24T13:00:00Z"
+            }
+          ],
+          "attempted_user_ids": [
+            "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3"
+          ],
+          "dry_run": false
+        }
+      }
+    }
+  },
+  "endpoint_2_list_all_worklogs": {
+    "description": "GET /api/v1/remittances/list-all-worklogs - Lists all worklogs with their remitted/unremitted amounts",
+    "examples": {
+      "unremitted_filter": {
+        "description": "GET /api/v1/remittances/list-all-worklogs?remittanceStatus=UNREMITTED - Shows worklogs with any unpaid work",
+        "response": {
+          "count": 2,
+          "data": [
+            {
+              "worklog": {
+                "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+                "title": "Backend Development",
+                "description": "API implementation",
+                "hourly_rate_cents": 5000,
+                "id": "4c1e9bf3-9c9a-4e5e-a3c5-3f11e91f7f45",
+                "created_at": "2026-01-15T14:03:22Z"
+              },
+              "amounts": {
+                "worklog_id": "4c1e9bf3-9c9a-4e5e-a3c5-3f11e91f7f45",
+                "remitted_amount_cents": 0,
+                "unremitted_amount_cents": 20000,
+                "total_amount_cents": 20000
+              }
+            },
+            {
+              "worklog": {
+                "user_id": "d8g37d17-46d5-5bg8-0c78-9b3f946ee2d4",
+                "title": "Frontend Work",
+                "description": "UI polish",
+                "hourly_rate_cents": 4500,
+                "id": "5d2f0cf4-0d0b-5f6f-b4d6-4g22f02g8g56",
+                "created_at": "2026-01-16T09:15:30Z"
+              },
+              "amounts": {
+                "worklog_id": "5d2f0cf4-0d0b-5f6f-b4d6-4g22f02g8g56",
+                "remitted_amount_cents": 0,
+                "unremitted_amount_cents": 13500,
+                "total_amount_cents": 13500
+              }
+            }
+          ]
+        }
+      },
+      "remitted_filter": {
+        "description": "GET /api/v1/remittances/list-all-worklogs?remittanceStatus=REMITTED - Shows worklogs that are fully paid",
+        "response": {
+          "count": 1,
+          "data": [
+            {
+              "worklog": {
+                "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+                "title": "Landing page polish",
+                "description": "QA fixes and copy updates",
+                "hourly_rate_cents": 5000,
+                "id": "6e3g1dg5-1e1c-6g7g-c5e7-5h33g13h9h67",
+                "created_at": "2026-01-10T08:20:15Z"
+              },
+              "amounts": {
+                "worklog_id": "6e3g1dg5-1e1c-6g7g-c5e7-5h33g13h9h67",
+                "remitted_amount_cents": 19500,
+                "unremitted_amount_cents": 0,
+                "total_amount_cents": 19500
+              }
+            }
+          ]
+        }
+      },
+      "no_filter_all_worklogs": {
+        "description": "GET /api/v1/remittances/list-all-worklogs - Shows all worklogs regardless of payment status",
+        "response": {
+          "count": 3,
+          "data": [
+            {
+              "worklog": {
+                "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+                "title": "Backend Development",
+                "description": "API implementation",
+                "hourly_rate_cents": 5000,
+                "id": "4c1e9bf3-9c9a-4e5e-a3c5-3f11e91f7f45",
+                "created_at": "2026-01-15T14:03:22Z"
+              },
+              "amounts": {
+                "worklog_id": "4c1e9bf3-9c9a-4e5e-a3c5-3f11e91f7f45",
+                "remitted_amount_cents": 0,
+                "unremitted_amount_cents": 20000,
+                "total_amount_cents": 20000
+              }
+            },
+            {
+              "worklog": {
+                "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+                "title": "Landing page polish",
+                "description": "QA fixes and copy updates",
+                "hourly_rate_cents": 5000,
+                "id": "6e3g1dg5-1e1c-6g7g-c5e7-5h33g13h9h67",
+                "created_at": "2026-01-10T08:20:15Z"
+              },
+              "amounts": {
+                "worklog_id": "6e3g1dg5-1e1c-6g7g-c5e7-5h33g13h9h67",
+                "remitted_amount_cents": 19500,
+                "unremitted_amount_cents": 0,
+                "total_amount_cents": 19500
+              }
+            },
+            {
+              "worklog": {
+                "user_id": "d8g37d17-46d5-5bg8-0c78-9b3f946ee2d4",
+                "title": "Database Optimization",
+                "description": "Query performance improvements",
+                "hourly_rate_cents": 6000,
+                "id": "7f4h2eh6-2f2d-7h8h-d6f8-6i44h24i0i78",
+                "created_at": "2026-01-12T11:45:00Z"
+              },
+              "amounts": {
+                "worklog_id": "7f4h2eh6-2f2d-7h8h-d6f8-6i44h24i0i78",
+                "remitted_amount_cents": 12000,
+                "unremitted_amount_cents": 8000,
+                "total_amount_cents": 20000
+              }
+            }
+          ]
+        }
+      },
+      "mixed_status_worklog": {
+        "description": "GET /api/v1/remittances/list-all-worklogs?remittanceStatus=UNREMITTED - Worklog with both paid and unpaid work",
+        "response": {
+          "count": 1,
+          "data": [
+            {
+              "worklog": {
+                "user_id": "c7f26c06-35c4-4af7-9b67-8a2e835cc0f3",
+                "title": "Ongoing Project",
+                "description": "Continuous development work",
+                "hourly_rate_cents": 5000,
+                "id": "8g5i3fi7-3g3e-8i9i-e7g9-7j55i35j1j89",
+                "created_at": "2026-01-05T10:00:00Z"
+              },
+              "amounts": {
+                "worklog_id": "8g5i3fi7-3g3e-8i9i-e7g9-7j55i35j1j89",
+                "remitted_amount_cents": 15000,
+                "unremitted_amount_cents": 7500,
+                "total_amount_cents": 22500
+              }
+            }
+          ]
+        }
+      },
+      "empty_response": {
+        "description": "GET /api/v1/remittances/list-all-worklogs?remittanceStatus=REMITTED - No worklogs match the filter",
+        "response": {
+          "count": 0,
+          "data": []
+        }
+      }
+    }
+  }
+}
