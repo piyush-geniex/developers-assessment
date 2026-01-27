@@ -1,0 +1,42 @@
+{
+    "list-all-worklogs ": {
+        "worklogs": [
+            {
+                "task_id": 101,
+                "end_time": "2024-01-10T13:00:00",
+                "user_id": "3944adcb-8e36-4e0a-93b5-536d368c5b9d",
+                "start_time": "2024-01-10T09:00:00",
+                "id": 1,
+                "is_settled": false
+            },
+            {
+                "task_id": 101,
+                "end_time": "2024-01-11T18:30:00",
+                "user_id": "3944adcb-8e36-4e0a-93b5-536d368c5b9d",
+                "start_time": "2024-01-11T14:00:00",
+                "id": 2,
+                "is_settled": false
+            },
+            {
+                "task_id": 102,
+                "end_time": "2024-01-15T12:00:00",
+                "user_id": "3944adcb-8e36-4e0a-93b5-536d368c5b9d",
+                "start_time": "2024-01-15T10:00:00",
+                "id": 3,
+                "is_settled": false
+            }
+        ]
+    },
+    "generate-remittances-for-all-users": {
+        "remittances": [
+            {
+                "period_end": "2025-01-10T09:00:00",
+                "user_id": "3944adcb-8e36-4e0a-93b5-536d368c5b9d",
+                "amount": 1050,
+                "id": 15,
+                "period_start": "2023-01-01T09:00:00",
+                "status": "REMITTED"
+            }
+        ]
+    }
+}

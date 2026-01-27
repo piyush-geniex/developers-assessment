@@ -2,6 +2,7 @@ import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+from datetime import datetime
 
 
 # Shared properties
@@ -111,3 +112,23 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+class WorkLog(SQLModel, table=True):
+    __tablename__ = "worklog"
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    task_id: int
+    start_time: datetime
+    end_time: datetime
+    is_settled: bool = False
+
+class Remittance(SQLModel, table=True):
+    __tablename__ = "remittance"
+
+    id: int | None = Field(default=None, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    amount: float
+    period_start: datetime
+    period_end: datetime
+    status: str

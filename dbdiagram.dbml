@@ -1,0 +1,30 @@
+Table users {
+  id int [pk]
+  email varchar [unique, not null]
+  is_active boolean
+  is_superuser boolean
+  created_at datetime
+}
+
+Table work_logs {
+  id int [pk]
+  user_id int [not null]
+  task_id int
+  start_time datetime [not null]
+  end_time datetime [not null]
+  is_settled boolean [default: false]
+  created_at datetime
+}
+
+Table remittances {
+  id int [pk]
+  user_id int [not null]
+  amount float [not null]
+  period_start datetime [not null]
+  period_end datetime [not null]
+  status varchar
+  created_at datetime
+}
+
+Ref: work_logs.user_id > users.id
+Ref: remittances.user_id > users.id
