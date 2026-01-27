@@ -1,7 +1,10 @@
 import uuid
+from datetime import date, datetime
+from decimal import Decimal
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column, Numeric
 
 
 # Shared properties
@@ -111,3 +114,60 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class WorkLog(SQLModel, table=True):
+    __tablename__ = "work_log"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    task_name: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=1024)
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    total_remitted_amount: Decimal = Field(
+        default=Decimal("0.00"),
+        sa_column=Column(Numeric(18, 2), nullable=False, server_default="0"),
+    )
+
+
+class WorkLogSegment(SQLModel, table=True):
+    __tablename__ = "work_log_segment"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="work_log.id", nullable=False)
+    start_time: datetime = Field(nullable=False)
+    end_time: datetime = Field(nullable=False)
+    hourly_rate: Decimal = Field(
+        default=Decimal("0.00"),
+        sa_column=Column(Numeric(18, 2), nullable=False, server_default="0"),
+    )
+    is_active: bool = Field(default=True, nullable=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class WorkLogAdjustment(SQLModel, table=True):
+    __tablename__ = "work_log_adjustment"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="work_log.id", nullable=False)
+    amount: Decimal = Field(
+        default=Decimal("0.00"),
+        sa_column=Column(Numeric(18, 2), nullable=False),
+    )
+    reason: str | None = Field(default=None, max_length=255)
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+
+
+class Remittance(SQLModel, table=True):
+    __tablename__ = "remittance"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    period_start: date | None = Field(default=None)
+    period_end: date | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
+    amount: Decimal = Field(
+        default=Decimal("0.00"),
+        sa_column=Column(Numeric(18, 2), nullable=False),
+    )
+    status: str = Field(default="SUCCEEDED", max_length=32)

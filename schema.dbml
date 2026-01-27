@@ -1,0 +1,56 @@
+Project WorkLogSettlementSystem {
+  database_type: "PostgreSQL"
+}
+
+Table user {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  is_active boolean [not null]
+  is_superuser boolean [not null]
+  full_name varchar(255)
+  hashed_password varchar(255) [not null]
+}
+
+Table item {
+  id uuid [pk]
+  title varchar(255) [not null]
+  description varchar(255)
+  owner_id uuid [not null, ref: > user.id]
+}
+
+Table work_log {
+  id uuid [pk]
+  user_id uuid [not null, ref: > user.id]
+  task_name varchar(255) [not null]
+  description varchar(1024)
+  created_at timestamp [not null]
+  total_remitted_amount numeric(18,2) [not null, default: 0]
+}
+
+Table work_log_segment {
+  id uuid [pk]
+  worklog_id uuid [not null, ref: > work_log.id]
+  start_time timestamp [not null]
+  end_time timestamp [not null]
+  hourly_rate numeric(18,2) [not null, default: 0]
+  is_active boolean [not null, default: true]
+  created_at timestamp [not null]
+}
+
+Table work_log_adjustment {
+  id uuid [pk]
+  worklog_id uuid [not null, ref: > work_log.id]
+  amount numeric(18,2) [not null]
+  reason varchar(255)
+  created_at timestamp [not null]
+}
+
+Table remittance {
+  id uuid [pk]
+  user_id uuid [not null, ref: > user.id]
+  period_start date
+  period_end date
+  created_at timestamp [not null]
+  amount numeric(18,2) [not null]
+  status varchar(32) [not null, default: 'SUCCEEDED']
+}
