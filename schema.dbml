@@ -1,0 +1,56 @@
+Table task {
+  id uuid [pk]
+  title varchar
+  description varchar
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table worklog {
+  id uuid [pk]
+  user_id uuid [not null]
+  task_id uuid [not null]
+  created_at timestamptz
+  updated_at timestamptz
+}
+
+Table adjustment {
+  id uuid [pk]
+  worklog_id uuid [not null]
+  description varchar
+  amount float
+}
+
+Table time_segment {
+  id uuid [pk]
+  worklog_id uuid [not null]
+  start timestamptz
+  end timestamptz
+}
+
+Table remittance {
+  id uuid [pk]
+  user_id uuid [not null]
+  total_amount float
+  status varchar
+  period_start date
+  period_end date
+  created_at timestamptz
+  updated_at timestamptz
+  paid_at timestamptz
+}
+
+Table remittance_worklog {
+  id uuid [pk]
+  remittance_id uuid [not null]
+  worklog_id uuid [not null]
+  amount float
+}
+
+Ref: worklog.task_id > task.id
+Ref: adjustment.worklog_id > worklog.id
+Ref: time_segment.worklog_id > worklog.id
+Ref: remittance_worklog.worklog_id > worklog.id
+Ref: remittance_worklog.remittance_id > remittance.id
+Ref: remittance.user_id > user.id
+Ref: worklog.user_id > user.id

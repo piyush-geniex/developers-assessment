@@ -1,8 +1,6 @@
 import uuid
 from typing import Any
-
 from fastapi import APIRouter, Depends
-
 from app.api.deps import (
     CurrentUser,
     SessionDep,

@@ -1,0 +1,15 @@
+[
+    {
+        "worklog_id": "e7fe18e1-6173-4b9e-9cc6-292c6e5af1d6",
+        "user_id": "3ee30f85-77f8-4323-b742-2e737bd36e16",
+        "user_name": "andrei",
+        "task_id": "aedc3d62-f69d-4f38-be8d-677295c0ff8d",
+        "task_title": "move dog",
+        "total_amount": 0,
+        "remitted_amount": 0,
+        "remaining_amount": 0,
+        "is_fully_remitted": true,
+        "time_segments_count": 0,
+        "adjustments_count": 0
+    }
+]
