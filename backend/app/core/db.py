@@ -4,6 +4,8 @@ from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
 
+# Import all models to ensure registry is populated
+
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 

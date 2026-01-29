@@ -1,0 +1,120 @@
+Table User {
+  id uuid [pk]
+  email varchar
+  hashed_password varchar
+  is_active bool
+  is_superuser bool
+  full_name varchar
+}
+
+Table Task {
+  id uuid [pk]
+  title varchar
+  description varchar
+  rate_amount decimal
+  currency varchar
+  created_by_id uuid [ref: > User.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table WorkLog {
+  id uuid [pk]
+  worker_id uuid [ref: > User.id]
+  task_id uuid [ref: > Task.id]
+  remittance_status varchar
+  amount decimal
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table TimeSegment {
+  id uuid [pk]
+  work_log_id uuid [ref: > WorkLog.id]
+  remittance_id uuid [ref: > Remittance.id]
+  start_time timestamp
+  end_time timestamp
+  duration_hours decimal
+  rate_at_recording decimal
+  status varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table Dispute {
+  id uuid [pk]
+  time_segment_id uuid [ref: > TimeSegment.id]
+  reason varchar
+  status varchar
+  resolution_notes varchar
+  created_at timestamp
+  resolved_at timestamp
+}
+
+Table SettlementRun {
+  id uuid [pk]
+  task_id uuid [ref: > TaskStatus.id]
+  start_date timestamp
+  end_date timestamp
+  status varchar
+  created_at timestamp
+}
+
+Table Remittance {
+  id uuid [pk]
+  worker_id uuid [ref: > User.id]
+  settlement_run_id uuid [ref: > SettlementRun.id]
+  task_id uuid
+  amount decimal
+  status varchar
+  created_at timestamp
+  processed_at timestamp
+}
+
+Table Adjustment {
+  id uuid [pk]
+  time_segment_id uuid [ref: > TimeSegment.id]
+  remittance_id uuid [ref: > Remittance.id]
+  amount decimal
+  reason varchar
+  status varchar
+  effective_date timestamp
+  created_at timestamp
+}
+
+Table Wallet {
+  id uuid [pk]
+  user_id uuid [ref: > User.id]
+  balance decimal
+  reserve decimal
+  currency varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table Transaction {
+  id uuid [pk]
+  wallet_id uuid [ref: > Wallet.id]
+  amount decimal
+  transaction_type varchar
+  description varchar
+  reference_id uuid
+  created_at timestamp
+}
+
+Table Item {
+  id uuid [pk]
+  title varchar
+  description varchar
+  owner_id uuid [ref: > User.id]
+}
+
+Table TaskStatus {
+  id uuid [pk]
+  task_type varchar
+  status varchar
+  progress_percentage integer
+  message varchar
+  created_at timestamp
+  updated_at timestamp
+}

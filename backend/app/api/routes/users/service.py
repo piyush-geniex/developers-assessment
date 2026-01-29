@@ -1,5 +1,4 @@
 import uuid
-from typing import Any
 
 from fastapi import HTTPException
 from sqlmodel import Session, col, delete, func, select
@@ -51,7 +50,9 @@ class UserService:
         user = crud.create_user(session=session, user_create=user_in)
         if settings.emails_enabled and user_in.email:
             email_data = generate_new_account_email(
-                email_to=user_in.email, username=user_in.email, password=user_in.password
+                email_to=user_in.email,
+                username=user_in.email,
+                password=user_in.password,
             )
             send_email(
                 email_to=user_in.email,
@@ -91,7 +92,8 @@ class UserService:
             raise HTTPException(status_code=400, detail="Incorrect password")
         if body.current_password == body.new_password:
             raise HTTPException(
-                status_code=400, detail="New password cannot be the same as the current one"
+                status_code=400,
+                detail="New password cannot be the same as the current one",
             )
         hashed_password = get_password_hash(body.new_password)
         current_user.hashed_password = hashed_password
@@ -113,7 +115,8 @@ class UserService:
         """
         if current_user.is_superuser:
             raise HTTPException(
-                status_code=403, detail="Super users are not allowed to delete themselves"
+                status_code=403,
+                detail="Super users are not allowed to delete themselves",
             )
         session.delete(current_user)
         session.commit()
@@ -186,7 +189,8 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
         if user == current_user:
             raise HTTPException(
-                status_code=403, detail="Super users are not allowed to delete themselves"
+                status_code=403,
+                detail="Super users are not allowed to delete themselves",
             )
         statement = delete(Item).where(col(Item.owner_id) == user_id)
         session.exec(statement)  # type: ignore

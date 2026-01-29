@@ -1,0 +1,75 @@
+{
+  "generate_remittances_for_all_users": {
+    "endpoint": "/api/v1/generate-remittances-for-all-users",
+    "method": "POST",
+    "description": "Generates remittances for all users based on eligible work and returns a task_id for polling.",
+    "request_headers": {
+      "Authorization": "Bearer <superuser_token>"
+    },
+    "response": {
+      "task_id": "a84f7475-c9b9-4daf-933d-5d9d38344ad3",
+      "message": "Settlement process started in background"
+    },
+    "status_code": 200
+  },
+  "list_all_worklogs": {
+    "endpoint": "/api/v1/list-all-worklogs",
+    "method": "GET",
+    "description": "Public endpoint to list all worklogs with filtering and amount information.",
+    "query_parameters": {
+      "remittanceStatus": "Filter by remittance status (REMITTED or UNREMITTED)",
+      "includeAccrued": "Boolean to include accrued amounts in response"
+    },
+    "status_code": 200,
+    "examples": {
+      "without_params": {
+        "url": "/api/v1/list-all-worklogs",
+        "response": [
+          {
+            "id": "f0590aa0-92e5-47ed-8412-37d2a6ae0b27",
+            "worker_id": "b05d5747-5eae-45ca-81a9-6c4dfd7c0738",
+            "task_id": "c3dcbc2b-e557-457a-9511-7f1f2e91607d",
+            "remittance_status": "REMITTED",
+            "amount": "0",
+            "created_at": "2026-01-29T04:59:52.579887",
+            "updated_at": "2026-01-29T04:59:52.854217"
+          },
+          {
+            "id": "031c95e4-6af0-4551-951a-7249bb9cb3c9",
+            "worker_id": "0ccb9f29-17d9-462d-9923-d7de2756b5a8",
+            "task_id": "6cbe46be-82ab-4d06-827f-656d419dc4c3",
+            "remittance_status": "REMITTED",
+            "amount": "400.0000",
+            "created_at": "2026-01-29T05:00:43.599502",
+            "updated_at": "2026-01-29T05:00:43.797213"
+          }
+        ]
+      },
+      "with_include_accrued": {
+        "url": "/api/v1/list-all-worklogs?includeAccrued=true",
+        "response": [
+          {
+            "id": "f0590aa0-92e5-47ed-8412-37d2a6ae0b27",
+            "worker_id": "b05d5747-5eae-45ca-81a9-6c4dfd7c0738",
+            "task_id": "c3dcbc2b-e557-457a-9511-7f1f2e91607d",
+            "remittance_status": "REMITTED",
+            "amount": "0",
+            "created_at": "2026-01-29T04:59:52.579887",
+            "updated_at": "2026-01-29T04:59:52.854217",
+            "accrued_amount": "100.0000"
+          },
+          {
+            "id": "031c95e4-6af0-4551-951a-7249bb9cb3c9",
+            "worker_id": "0ccb9f29-17d9-462d-9923-d7de2756b5a8",
+            "task_id": "6cbe46be-82ab-4d06-827f-656d419dc4c3",
+            "remittance_status": "REMITTED",
+            "amount": "400.0000",
+            "created_at": "2026-01-29T05:00:43.599502",
+            "updated_at": "2026-01-29T05:00:43.797213",
+            "accrued_amount": "0"
+          }
+        ]
+      }
+    }
+  }
+}

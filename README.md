@@ -71,11 +71,11 @@ To submit your assessment, please follow these steps:
 
 ### Submission Checklist
 
-- [ ] Forked the repository
-- [ ] Implemented both required endpoints
-- [ ] Added DBML diagram of your database schema
-- [ ] Added JSON file with sample responses from both endpoints
-- [ ] Created Pull Request
+- [] Forked the repository
+- [] Implemented both required endpoints
+- [] Added DBML diagram of your database schema
+- [] Added JSON file with sample responses from both endpoints
+- [] Created Pull Request
 
 
 ## Technology Stack

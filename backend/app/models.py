@@ -1,7 +1,12 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.financials.models import Remittance
+    from app.tasks.models import WorkLog
 
 
 # Shared properties
@@ -44,6 +49,9 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+
+    work_logs: list["WorkLog"] = Relationship(back_populates="user")
+    remittances: list["Remittance"] = Relationship(back_populates="user")
 
 
 # Properties to return via API, id is always required
@@ -111,3 +119,8 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+# Ensure domain models are registered at runtime
+from app.tasks.models import Task, WorkLog, TimeSegment, Dispute  # noqa
+from app.financials.models import SettlementRun, Remittance, Adjustment, Wallet, Transaction, TaskStatus  # noqa

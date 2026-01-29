@@ -5,6 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.financials.scheduler import shutdown_scheduler, start_scheduler
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
@@ -19,6 +20,17 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    start_scheduler()
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    shutdown_scheduler()
+
 
 # Set all CORS enabled origins
 if settings.all_cors_origins:
