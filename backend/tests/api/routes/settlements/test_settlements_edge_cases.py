@@ -311,13 +311,12 @@ def test_zero_net_amount_not_counted(clean_session: Session, test_user: User):
     # Should NOT count in total
     assert settlement.total_remittances_generated == 0
 
-    # But remittance should still exist
+    # Zero-net remittances are not persisted (ensures consistency with counting)
     remittance = clean_session.exec(
         select(Remittance).where(Remittance.settlement_id == settlement.id)
     ).first()
 
-    assert remittance is not None
-    assert remittance.net_amount == Decimal("0.00")
+    assert remittance is None
 
 
 def test_cancelled_remittance_reconciliation(clean_session: Session, test_user: User):

@@ -101,13 +101,16 @@ class SettlementService:
         worker_ids.update(workers_with_failed)
 
         # Also include workers with unapplied adjustments (even if no time segments)
-        # Subquery: adjustment IDs already applied in PAID remittances
+        # Subquery: adjustment IDs already applied in PAID or PENDING remittances
+        # Exclude PENDING to ensure idempotency on re-runs
         applied_adjustment_ids_query = (
             select(RemittanceLine.adjustment_id)
             .join(Remittance, col(RemittanceLine.remittance_id) == col(Remittance.id))
             .where(
                 and_(
-                    Remittance.status == RemittanceStatus.PAID,
+                    col(Remittance.status).in_(
+                        [RemittanceStatus.PAID, RemittanceStatus.PENDING]
+                    ),
                     col(RemittanceLine.adjustment_id).is_not(None),
                 )
             )
@@ -219,6 +222,10 @@ class SettlementService:
 
         net_amount = gross_amount + adjustments_amount
 
+        # Skip creating remittance if net amount is zero
+        if net_amount == Decimal("0"):
+            return None
+
         # Create remittance
         remittance = Remittance(
             settlement_id=settlement_id,
@@ -268,7 +275,8 @@ class SettlementService:
         A segment is unsettled if:
         - It's not soft-deleted
         - It's in the settlement period
-        - It hasn't been included in a PAID remittance
+        - It hasn't been included in a PAID or PENDING remittance
+        (PENDING is excluded to ensure idempotency on re-runs)
 
         Args:
             session: Database session
@@ -279,18 +287,21 @@ class SettlementService:
         Returns:
             List of unsettled time segments
         """
-        # Subquery: segment IDs that are already paid
-        paid_segment_ids_query = (
+        # Subquery: segment IDs that are already in PAID or PENDING remittances
+        # Exclude PENDING to prevent duplicate remittance lines on re-runs
+        settled_segment_ids_query = (
             select(RemittanceLine.time_segment_id)
             .join(Remittance, col(RemittanceLine.remittance_id) == col(Remittance.id))
             .where(
                 and_(
-                    Remittance.status == RemittanceStatus.PAID,
+                    col(Remittance.status).in_(
+                        [RemittanceStatus.PAID, RemittanceStatus.PENDING]
+                    ),
                     col(RemittanceLine.time_segment_id).is_not(None),
                 )
             )
         )
-        paid_segment_ids = session.exec(paid_segment_ids_query).all()
+        settled_segment_ids = session.exec(settled_segment_ids_query).all()
 
         # Build query conditions
         conditions: list[ColumnElement[bool] | bool] = [
@@ -300,9 +311,9 @@ class SettlementService:
             col(TimeSegment.deleted_at).is_(None),
         ]
 
-        # Only add the paid segment filter if there are paid segments
-        if paid_segment_ids:
-            conditions.append(col(TimeSegment.id).not_in(paid_segment_ids))
+        # Only add the settled segment filter if there are settled segments
+        if settled_segment_ids:
+            conditions.append(col(TimeSegment.id).not_in(settled_segment_ids))
 
         # Query unsettled segments
         query = (
@@ -367,9 +378,10 @@ class SettlementService:
         session: Session, worker_id: uuid.UUID
     ) -> list[Adjustment]:
         """
-        Find adjustments that haven't been applied in a paid remittance.
+        Find adjustments that haven't been applied in a paid or pending remittance.
 
         This includes retroactive adjustments from any period.
+        PENDING remittances are excluded to ensure idempotency on re-runs.
 
         Args:
             session: Database session
@@ -378,13 +390,16 @@ class SettlementService:
         Returns:
             List of applicable adjustments
         """
-        # Subquery: adjustment IDs already applied in PAID remittances
+        # Subquery: adjustment IDs already applied in PAID or PENDING remittances
+        # Exclude PENDING to prevent duplicate remittance lines on re-runs
         applied_adjustment_ids_query = (
             select(RemittanceLine.adjustment_id)
             .join(Remittance, col(RemittanceLine.remittance_id) == col(Remittance.id))
             .where(
                 and_(
-                    Remittance.status == RemittanceStatus.PAID,
+                    col(Remittance.status).in_(
+                        [RemittanceStatus.PAID, RemittanceStatus.PENDING]
+                    ),
                     col(RemittanceLine.adjustment_id).is_not(None),
                 )
             )
