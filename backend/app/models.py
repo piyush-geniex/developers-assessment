@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 from enum import Enum
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -113,7 +113,7 @@ class WorkLog(SQLModel, table=True):
         index = True,
         nullable=False, 
         ondelete="CASCADE")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     user: User = Relationship(back_populates="worklogs")
     time_segments: list["TimeSegment"] = Relationship(back_populates="worklog", cascade_delete=True)
     adjustment: list["Adjustment"] = Relationship(back_populates="worklog",  cascade_delete=True)
@@ -126,7 +126,7 @@ class TimeSegment(SQLModel, table=True):
         nullable=False, 
         ondelete="CASCADE")
     minutes: int = Field(gt=0)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     worklog: WorkLog = Relationship(back_populates="time_segments")
 
 class Adjustment(SQLModel, table=True):
@@ -138,7 +138,7 @@ class Adjustment(SQLModel, table=True):
         ondelete="CASCADE")
     amount: Decimal
     reason: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     worklog: WorkLog = Relationship(back_populates="adjustment")
 
 class Remittance(SQLModel, table=True):
@@ -156,7 +156,7 @@ class Remittance(SQLModel, table=True):
     period_start: date
     period_end: date
     status: RemittanceStatus
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     items: list["RemittanceItem"] = Relationship(
         back_populates="remittance",
