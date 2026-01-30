@@ -173,7 +173,7 @@ def _find_applicable_adjustments(session, worker_id):
         JOIN remittance ON ...
         WHERE remittance.status = 'PAID'
     )
-    
+
     return adjustments NOT IN paid_adjustment_ids
 ```
 
@@ -191,7 +191,7 @@ def _find_unsettled_time_segments(session, worker_id, period_start, period_end):
         JOIN remittance ON ...
         WHERE remittance.status = 'PAID'
     )
-    
+
     # Return segments NOT in paid list
     return time_segments WHERE id NOT IN paid_segment_ids
 ```
@@ -251,7 +251,7 @@ GET /api/v1/list-all-worklogs
 1. **Filtering**: Optional filter allows "show me what needs payment"
 2. **Amount calculation**: Included for every worklog (current state)
 3. **Pagination**: Standard skip/limit pattern, max 1000 to prevent abuse
-4. **Status definition**: 
+4. **Status definition**:
    - REMITTED = ALL segments paid
    - UNREMITTED = AT LEAST ONE segment unpaid
 
@@ -272,7 +272,7 @@ Every financial transaction can be traced:
 
 ```sql
 -- Who got paid what and when?
-SELECT 
+SELECT
     u.email as worker,
     r.net_amount,
     r.paid_at,
@@ -331,10 +331,10 @@ HAVING r.net_amount != SUM(rl.amount);
 
 1. **Large worker count**: Settlement generation loops over all workers
    - **Mitigation**: Batch processing, async jobs for production
-   
+
 2. **Long time ranges**: Many segments to query
    - **Mitigation**: Limit period to 1 month at a time
-   
+
 3. **N+1 queries**: Fetching related data per worklog
    - **Mitigation**: Use SQLModel's `selectinload()` for eager loading
 
