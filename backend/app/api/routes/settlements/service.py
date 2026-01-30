@@ -143,7 +143,7 @@ class SettlementService:
             remittance = SettlementService._create_worker_remittance(
                 session, worker_id, settlement.id, period_start, period_end
             )
-            if remittance and remittance.net_amount != Decimal("0"):
+            if remittance is not None:
                 remittances_created += 1
 
         settlement.total_remittances_generated = remittances_created

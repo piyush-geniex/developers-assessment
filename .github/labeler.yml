@@ -23,8 +23,3 @@ internal:
         - '!./**/*.md'
         - '!frontend/**'
         - '!backend/**'
-  # Fallback: Add internal label for any frontend/backend code changes
-  - changed-files:
-    - any-glob-to-any-file:
-      - 'frontend/**'
-      - 'backend/**'

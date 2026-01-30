@@ -5,6 +5,7 @@ Endpoints for generating remittances and listing worklogs.
 """
 
 from datetime import date
+from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
@@ -66,8 +67,10 @@ def generate_remittances_for_all_users(
         )
 
         # Calculate totals from the settlement's remittances
-        total_gross = sum(r.gross_amount for r in settlement.remittances)
-        total_net = sum(r.net_amount for r in settlement.remittances)
+        total_gross = sum(
+            (r.gross_amount for r in settlement.remittances), Decimal("0")
+        )
+        total_net = sum((r.net_amount for r in settlement.remittances), Decimal("0"))
 
         # Build response
         settlement_public = SettlementPublic(
