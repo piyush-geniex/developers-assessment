@@ -11,8 +11,21 @@ jobs:
   add-to-project:
     name: Add to project
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     steps:
-      - uses: actions/add-to-project@v1.0.2
+      - name: Set token
+        id: set-token
+        run: |
+          if [ -n "${{ secrets.PROJECTS_TOKEN }}" ]; then
+            echo "token=${{ secrets.PROJECTS_TOKEN }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "token=${{ github.token }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Add to project
+        uses: actions/add-to-project@v1.0.2
         with:
           project-url: https://github.com/orgs/fastapi/projects/2
-          github-token: ${{ secrets.PROJECTS_TOKEN }}
+          github-token: ${{ steps.set-token.outputs.token }}
