@@ -19,7 +19,19 @@ fileConfig(config.config_file_name)
 # target_metadata = None
 
 from app.models import SQLModel  # noqa
-from app.core.config import settings # noqa
+from app.core.config import settings  # noqa
+
+# Import all models so Alembic can detect them
+from app.models import (  # noqa
+    Adjustment,
+    Item,
+    Remittance,
+    RemittanceLine,
+    Settlement,
+    TimeSegment,
+    User,
+    WorkLog,
+)
 
 target_metadata = SQLModel.metadata
 

@@ -46,7 +46,9 @@ class AuthService:
         """
         Test access token
         """
-        return current_user
+        from app.models import UserPublic
+
+        return UserPublic.model_validate(current_user)
 
     @staticmethod
     def recover_password(email: str, session: Session) -> Message:

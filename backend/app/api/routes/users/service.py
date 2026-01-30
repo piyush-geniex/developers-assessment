@@ -1,5 +1,4 @@
 import uuid
-from typing import Any
 
 from fastapi import HTTPException
 from sqlmodel import Session, col, delete, func, select
@@ -34,7 +33,9 @@ class UserService:
         statement = select(User).offset(skip).limit(limit)
         users = session.exec(statement).all()
 
-        return UsersPublic(data=users, count=count)
+        return UsersPublic(
+            data=[UserPublic.model_validate(user) for user in users], count=count
+        )
 
     @staticmethod
     def create_user(session: Session, user_in: UserCreate) -> UserPublic:
@@ -51,14 +52,16 @@ class UserService:
         user = crud.create_user(session=session, user_create=user_in)
         if settings.emails_enabled and user_in.email:
             email_data = generate_new_account_email(
-                email_to=user_in.email, username=user_in.email, password=user_in.password
+                email_to=user_in.email,
+                username=user_in.email,
+                password=user_in.password,
             )
             send_email(
                 email_to=user_in.email,
                 subject=email_data.subject,
                 html_content=email_data.html_content,
             )
-        return user
+        return UserPublic.model_validate(user)
 
     @staticmethod
     def update_user_me(
@@ -78,7 +81,7 @@ class UserService:
         session.add(current_user)
         session.commit()
         session.refresh(current_user)
-        return current_user
+        return UserPublic.model_validate(current_user)
 
     @staticmethod
     def update_password_me(
@@ -91,7 +94,8 @@ class UserService:
             raise HTTPException(status_code=400, detail="Incorrect password")
         if body.current_password == body.new_password:
             raise HTTPException(
-                status_code=400, detail="New password cannot be the same as the current one"
+                status_code=400,
+                detail="New password cannot be the same as the current one",
             )
         hashed_password = get_password_hash(body.new_password)
         current_user.hashed_password = hashed_password
@@ -104,7 +108,7 @@ class UserService:
         """
         Get current user.
         """
-        return current_user
+        return UserPublic.model_validate(current_user)
 
     @staticmethod
     def delete_user_me(session: Session, current_user: User) -> Message:
@@ -113,7 +117,8 @@ class UserService:
         """
         if current_user.is_superuser:
             raise HTTPException(
-                status_code=403, detail="Super users are not allowed to delete themselves"
+                status_code=403,
+                detail="Super users are not allowed to delete themselves",
             )
         session.delete(current_user)
         session.commit()
@@ -132,7 +137,7 @@ class UserService:
             )
         user_create = UserCreate.model_validate(user_in)
         user = crud.create_user(session=session, user_create=user_create)
-        return user
+        return UserPublic.model_validate(user)
 
     @staticmethod
     def get_user_by_id(
@@ -142,14 +147,16 @@ class UserService:
         Get a specific user by id.
         """
         user = session.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         if user == current_user:
-            return user
+            return UserPublic.model_validate(user)
         if not current_user.is_superuser:
             raise HTTPException(
                 status_code=403,
                 detail="The user doesn't have enough privileges",
             )
-        return user
+        return UserPublic.model_validate(user)
 
     @staticmethod
     def update_user(
@@ -172,7 +179,7 @@ class UserService:
                 )
 
         db_user = crud.update_user(session=session, db_user=db_user, user_in=user_in)
-        return db_user
+        return UserPublic.model_validate(db_user)
 
     @staticmethod
     def delete_user(
@@ -186,10 +193,11 @@ class UserService:
             raise HTTPException(status_code=404, detail="User not found")
         if user == current_user:
             raise HTTPException(
-                status_code=403, detail="Super users are not allowed to delete themselves"
+                status_code=403,
+                detail="Super users are not allowed to delete themselves",
             )
         statement = delete(Item).where(col(Item.owner_id) == user_id)
-        session.exec(statement)  # type: ignore
+        session.exec(statement)
         session.delete(user)
         session.commit()
         return Message(message="User deleted successfully")

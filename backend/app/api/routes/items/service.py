@@ -35,7 +35,9 @@ class ItemService:
             )
             items = session.exec(statement).all()
 
-        return ItemsPublic(data=items, count=count)
+        return ItemsPublic(
+            data=[ItemPublic.model_validate(item) for item in items], count=count
+        )
 
     @staticmethod
     def get_item(session: Session, current_user: Any, item_id: uuid.UUID) -> ItemPublic:
@@ -47,7 +49,7 @@ class ItemService:
             raise HTTPException(status_code=404, detail="Item not found")
         if not current_user.is_superuser and (item.owner_id != current_user.id):
             raise HTTPException(status_code=400, detail="Not enough permissions")
-        return item
+        return ItemPublic.model_validate(item)
 
     @staticmethod
     def create_item(
@@ -60,7 +62,7 @@ class ItemService:
         session.add(item)
         session.commit()
         session.refresh(item)
-        return item
+        return ItemPublic.model_validate(item)
 
     @staticmethod
     def update_item(
@@ -79,7 +81,7 @@ class ItemService:
         session.add(item)
         session.commit()
         session.refresh(item)
-        return item
+        return ItemPublic.model_validate(item)
 
     @staticmethod
     def delete_item(session: Session, current_user: Any, item_id: uuid.UUID) -> Message:

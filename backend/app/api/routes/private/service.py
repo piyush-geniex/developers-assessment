@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel
 from sqlmodel import Session
 
@@ -29,4 +27,4 @@ class PrivateService:
         session.add(user)
         session.commit()
 
-        return user
+        return UserPublic.model_validate(user)
