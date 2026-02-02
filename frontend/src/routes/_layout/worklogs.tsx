@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router"
+import { createFileRoute, Outlet, useMatchRoute } from "@tanstack/react-router"
 import { Calendar, Search } from "lucide-react"
 import { useEffect, useState } from "react"
 
@@ -38,6 +38,21 @@ function getWorklogsQueryOptions(params: {
         remittance_status: params.remittance_status ?? undefined,
       }),
   }
+}
+
+function ViewEntriesButton({ workLogId }: { workLogId: string }) {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      type="button"
+      onClick={() => {
+        window.location.href = `/worklogs/${workLogId}`
+      }}
+    >
+      View entries
+    </Button>
+  )
 }
 
 const worklogColumns = [
@@ -82,15 +97,7 @@ const worklogColumns = [
     id: "actions" as const,
     header: () => <span className="sr-only">Actions</span>,
     cell: ({ row }: { row: { original: WorkLogListItem } }) => (
-      <Button variant="ghost" size="sm" asChild>
-        <Link
-          to="/worklogs/$workLogId"
-          params={{ workLogId: String(row.original.id) }}
-          search={{ date_from: "", date_to: "", remittance_status: "" }}
-        >
-          View entries
-        </Link>
-      </Button>
+      <ViewEntriesButton workLogId={String(row.original.id)} />
     ),
   },
 ]
@@ -205,16 +212,16 @@ export const Route = createFileRoute("/_layout/worklogs")({
 function WorklogsPage() {
   const { date_from, date_to, remittance_status } = Route.useSearch()
   const navigate = Route.useNavigate()
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const matchRoute = useMatchRoute()
   const [dateFrom, setDateFrom] = useState(date_from)
   const [dateTo, setDateTo] = useState(date_to)
   const [statusFilter, setStatusFilter] = useState<
     "" | WorkLogRemittanceFilter | null
   >(remittance_status === "" ? null : remittance_status)
 
-  // Show detail child when path is /worklogs/:id
-  const isDetailView =
-    pathname !== "/worklogs" && pathname.startsWith("/worklogs/")
+  // Show detail child when we're on /worklogs/:workLogId
+  const detailMatch = matchRoute({ to: "/worklogs/$workLogId", fuzzy: true })
+  const isDetailView = !!detailMatch
 
   useEffect(() => {
     setDateFrom(date_from)
