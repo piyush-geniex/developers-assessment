@@ -1,0 +1,61 @@
+{
+  "generate-remittances-for-all-users": {
+    "request": {
+      "period_start": "2025-01-01",
+      "period_end": "2025-01-31"
+    },
+    "response": {
+      "remittances": [
+        {
+          "user_id": "11111111-1111-1111-1111-111111111111",
+          "period_start": "2025-01-01",
+          "period_end": "2025-01-31",
+          "total_amount": "1500.00",
+          "status": "SUCCESS",
+          "worklogs": [
+            {
+              "worklog_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+              "delta_amount": "1200.00"
+            },
+            {
+              "worklog_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+              "delta_amount": "300.00"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "list-all-worklogs-UNREMITTED": {
+    "request": {
+      "remittanceStatus": "UNREMITTED"
+    },
+    "response": {
+      "data": [
+        {
+          "worklog_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+          "user_id": "11111111-1111-1111-1111-111111111111",
+          "total_amount": "1200.00",
+          "remittance_status": "UNREMITTED"
+        }
+      ],
+      "count": 1
+    }
+  },
+  "list-all-worklogs-REMITTED": {
+    "request": {
+      "remittanceStatus": "REMITTED"
+    },
+    "response": {
+      "data": [
+        {
+          "worklog_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+          "user_id": "11111111-1111-1111-1111-111111111111",
+          "total_amount": "300.00",
+          "remittance_status": "REMITTED"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
