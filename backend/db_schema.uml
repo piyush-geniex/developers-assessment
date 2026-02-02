@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.adjustment</OriginalElement>
+  <nodes>
+    <node x="580.0595238095239" y="234.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.remittance</node>
+    <node x="381.0595238095238" y="267.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.item</node>
+    <node x="553.8095238095239" y="490.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.remittancelineitem</node>
+    <node x="181.0595238095238" y="245.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.worklog</node>
+    <node x="384.0" y="0.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.user</node>
+    <node x="0.0" y="719.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.alembic_version</node>
+    <node x="0.0" y="501.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.timesegment</node>
+    <node x="199.0" y="501.0">50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.adjustment</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.worklog" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.user">
+      <point x="0.0" y="-92.0" />
+      <point x="271.0595238095238" y="209.0" />
+      <point x="415.8333333333333" y="209.0" />
+      <point x="-63.666666666666686" y="92.0" />
+    </edge>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.remittancelineitem" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.remittance">
+      <point x="44.75" y="-92.0" />
+      <point x="0.0" y="103.0" />
+    </edge>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.remittancelineitem" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.worklog">
+      <point x="-44.75" y="-92.0" />
+      <point x="598.5595238095239" y="465.0" />
+      <point x="331.0595238095238" y="465.0" />
+      <point x="60.0" y="92.0" />
+    </edge>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.timesegment" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.worklog">
+      <point x="0.0" y="-81.0" />
+      <point x="89.5" y="465.0" />
+      <point x="211.0595238095238" y="465.0" />
+      <point x="-60.0" y="92.0" />
+    </edge>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.remittance" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.user">
+      <point x="0.0" y="-103.0" />
+      <point x="688.0595238095239" y="209.0" />
+      <point x="543.1666666666666" y="209.0" />
+      <point x="63.66666666666663" y="92.0" />
+    </edge>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.item" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.user">
+      <point x="0.0" y="-70.0" />
+      <point x="470.5595238095238" y="209.0" />
+      <point x="479.5" y="209.0" />
+      <point x="0.0" y="92.0" />
+    </edge>
+    <edge source="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.adjustment" target="50d2e1c7-d51a-497d-bd23-890e6921357c.TABLE:postgres.public.worklog">
+      <point x="0.0" y="-81.0" />
+      <point x="280.0" y="465.0" />
+      <point x="271.0595238095238" y="465.0" />
+      <point x="0.0" y="92.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="398.5" y="386.5" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Key columns</Category>
+    <Category>Columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

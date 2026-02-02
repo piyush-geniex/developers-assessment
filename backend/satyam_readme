@@ -1,0 +1,122 @@
+I’ve implemented the two requested endpoints. Before using them, please follow the steps below:
+
+1. Create at least two users in the database using the user signup API:
+   http://127.0.0.1:8000/api/v1/users/signup
+
+2. Since work details (work entries, durations, and hourly rates) require additional data, the necessary supporting
+   APIs would normally be needed.
+   To simplify this for now, I’ve created a seed endpoint that generates test data for users along with their
+   work durations.
+   Please use the following URL and run it only once:
+   http://127.0.0.1:8000/docs#/worklogs/worklogs-seed_test_data
+
+3. Once the above step is completed and dummy data is created, you’re all set to use the requested endpoints.
+
+
+
+----------------------------  API Usage Guide -----------------------------------------------------
+1. NAME: list-all-worklogs
+   CURL: curl -X 'GET' \
+  'http://127.0.0.1:8000/api/v1/worklogs/list-all-worklogs' \
+  -H 'accept: application/json'
+
+  DOC: http://127.0.0.1:8000/docs#/worklogs/worklogs-list_all_worklogs
+
+  RESPONSE: [
+        {
+        "task_name": "Build Login Page",
+        "description": "Frontend login implementation with validation",
+        "id": "8811d4d8-3d55-4e6b-828c-1946cdaee8d9",
+        "user_id": "d09e368e-f809-4554-9c6f-534cd10bff25",
+        "created_at": "2026-02-02T08:41:03.259392",
+        "updated_at": "2026-02-02T08:41:03.259456",
+        "total_hours": 10,
+        "total_amount": 300,
+        "paid_amount": 250,
+        "pending_amount": 50,
+        "remittance_status": "PARTIALLY_REMITTED",
+        "time_segments_count": 3,
+        "adjustments_total": 50
+        }
+  ]
+
+
+2. NAME: generate-remittances-for-all-users
+
+   CURL: curl -X 'POST' \
+  'http://127.0.0.1:8000/api/v1/worklogs/generate-remittances-for-all-users' \
+  -H 'accept: application/json' \
+  -d ''
+
+  DOC: http://127.0.0.1:8000/docs#/worklogs/worklogs-generate_remittances_for_all_users
+
+  RESPONSE: [
+        {
+      "total_remittances_created": 2,
+      "remittances": [
+        {
+          "settlement_period": "2026-02",
+          "id": "87da6ceb-c82a-4ac9-91b3-e111643f7a1e",
+          "user_id": "d09e368e-f809-4554-9c6f-534cd10bff25",
+          "user_name": "Satyam",
+          "total_amount": 820,
+          "status": "PENDING",
+          "created_at": "2026-02-02T09:46:31.664861",
+          "updated_at": "2026-02-02T09:46:31.664913",
+          "line_items": [
+            {
+              "amount": "50.00",
+              "description": "Settlement for Build Login Page",
+              "id": "9d40f6c6-314b-4099-b723-3273b7f5bfb6",
+              "worklog_id": "8811d4d8-3d55-4e6b-828c-1946cdaee8d9",
+              "task_name": "Build Login Page"
+            },
+            {
+              "amount": "170.00",
+              "description": "Settlement for API Integration",
+              "id": "10e75578-07c0-45e9-92b4-47a82242df22",
+              "worklog_id": "1c20f02a-7d83-42ec-8d23-7e581b532b97",
+              "task_name": "API Integration"
+            },
+            {
+              "amount": "600.00",
+              "description": "Settlement for Documentation",
+              "id": "3a32dd65-c93b-4e1f-848e-0aba6133eeb1",
+              "worklog_id": "8b185ca4-a6e4-4133-9c54-0e9ba7297452",
+              "task_name": "Documentation"
+            }
+          ]
+        },
+        {
+          "settlement_period": "2026-02",
+          "id": "5dac7d41-c658-4d23-87e3-9fbf228d3d9f",
+          "user_id": "7871fbf9-4dc0-4517-8e27-73fa22e6c98e",
+          "user_name": "Raj",
+          "total_amount": 590,
+          "status": "PENDING",
+          "created_at": "2026-02-02T09:46:31.678949",
+          "updated_at": "2026-02-02T09:46:31.678969",
+          "line_items": [
+            {
+              "amount": "330.00",
+              "description": "Settlement for Database Design",
+              "id": "c7dcec2c-d042-46e7-a144-5e0a007508b6",
+              "worklog_id": "3a0a4a77-743c-4db3-b8ae-7bddb215250e",
+              "task_name": "Database Design"
+            },
+            {
+              "amount": "260.00",
+              "description": "Settlement for Bug Fixes",
+              "id": "d9c70c9f-86c6-4b01-9817-848034af5185",
+              "worklog_id": "bfcbc4b3-b263-4fd1-b5ab-c68ab0a5a524",
+              "task_name": "Bug Fixes"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+
+
+NOTE: For DB schema, I am not able to run pgAdmin tool due to some conflict version issue so thats why
+      I have attached db_schema.uml and db_schema_pdf file generated via my IDE.

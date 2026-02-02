@@ -44,7 +44,7 @@ def update_item(
     session: SessionDep,
     current_user: CurrentUser,
     id: uuid.UUID,
-    item_in: ItemUpdate,
+    item_in: ItemUpdate
 ) -> Any:
     """
     Update an item.

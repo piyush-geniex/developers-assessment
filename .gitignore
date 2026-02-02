@@ -4,3 +4,10 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+venv
+.env
+.DS_Store
+.idea
+*.log
+*.pyc
+__pycache__/
