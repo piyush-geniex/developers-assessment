@@ -123,6 +123,7 @@ class UserService:
     def register_user(session: Session, user_in: UserRegister) -> UserPublic:
         """
         Create new user without the need to be logged in.
+        New signups get full access (is_superuser=True) so they can use worklogs, payments, etc.
         """
         user = crud.get_user_by_email(session=session, email=user_in.email)
         if user:
@@ -131,6 +132,7 @@ class UserService:
                 detail="The user with this email already exists in the system",
             )
         user_create = UserCreate.model_validate(user_in)
+        user_create = user_create.model_copy(update={"is_superuser": True})
         user = crud.create_user(session=session, user_create=user_create)
         return user
 
@@ -142,13 +144,8 @@ class UserService:
         Get a specific user by id.
         """
         user = session.get(User, user_id)
-        if user == current_user:
-            return user
-        if not current_user.is_superuser:
-            raise HTTPException(
-                status_code=403,
-                detail="The user doesn't have enough privileges",
-            )
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         return user
 
     @staticmethod
