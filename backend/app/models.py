@@ -1,4 +1,6 @@
 import uuid
+from datetime import date, datetime
+from decimal import Decimal
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -111,3 +113,105 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class WorkLog(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    task_code: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    segments: list["WorkLogSegment"] = Relationship(back_populates="worklog")
+    adjustments: list["WorkLogAdjustment"] = Relationship(back_populates="worklog")
+
+
+class WorkLogSegment(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+    work_date: date
+    hours: Decimal = Field(gt=Decimal("0"))
+    hourly_rate: Decimal = Field(gt=Decimal("0"))
+    is_questioned: bool = False
+    is_settled: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    worklog: WorkLog | None = Relationship(back_populates="segments")
+
+
+class WorkLogAdjustment(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+    segment_id: uuid.UUID | None = Field(default=None, foreign_key="worklogsegment.id")
+    amount: Decimal
+    reason: str = Field(min_length=1, max_length=255)
+    effective_date: date
+    is_settled: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    worklog: WorkLog | None = Relationship(back_populates="adjustments")
+
+
+class Remittance(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    period_start: date
+    period_end: date
+    total_amount: Decimal
+    status: str = Field(max_length=50)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class GenerateRemittancesRequest(SQLModel):
+    period_start: date
+    period_end: date
+
+
+class WorkLogDelta(SQLModel):
+    worklog_id: uuid.UUID
+    delta_amount: Decimal
+
+
+class UserRemittanceSummary(SQLModel):
+    user_id: uuid.UUID
+    period_start: date
+    period_end: date
+    total_amount: Decimal
+    status: str
+    worklogs: list[WorkLogDelta]
+
+
+class GenerateRemittancesResponse(SQLModel):
+    remittances: list[UserRemittanceSummary]
+
+
+class WorkLogSummary(SQLModel):
+    worklog_id: uuid.UUID
+    user_id: uuid.UUID
+    total_amount: Decimal
+    remittance_status: str
+
+
+class WorkLogsPublic(SQLModel):
+    data: list[WorkLogSummary]
+    count: int
+
+
+class WorkLogCreate(SQLModel):
+    user_id: uuid.UUID
+    task_code: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=255)
+
+
+class WorkLogSegmentCreate(SQLModel):
+    worklog_id: uuid.UUID
+    work_date: date
+    hours: Decimal
+    hourly_rate: Decimal
+    is_questioned: bool = False
+
+
+class WorkLogAdjustmentCreate(SQLModel):
+    worklog_id: uuid.UUID
+    segment_id: uuid.UUID | None = None
+    amount: Decimal
+    reason: str = Field(min_length=1, max_length=255)
+    effective_date: date

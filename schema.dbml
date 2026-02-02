@@ -1,0 +1,59 @@
+Project developers_assessment {
+  database_type: "PostgreSQL"
+}
+
+Table user {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  is_active boolean [not null]
+  is_superuser boolean [not null]
+  full_name varchar(255)
+}
+
+Table item {
+  id uuid [pk]
+  title varchar(255) [not null]
+  description varchar(255)
+  owner_id uuid [not null, ref: > user.id]
+}
+
+Table worklog {
+  id uuid [pk]
+  user_id uuid [not null, ref: > user.id]
+  task_code varchar(255)
+  description varchar(255)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+}
+
+Table worklogsegment {
+  id uuid [pk]
+  worklog_id uuid [not null, ref: > worklog.id]
+  work_date date [not null]
+  hours numeric [not null]
+  hourly_rate numeric [not null]
+  is_questioned boolean [not null]
+  is_settled boolean [not null]
+  created_at timestamp [not null]
+}
+
+Table worklogadjustment {
+  id uuid [pk]
+  worklog_id uuid [not null, ref: > worklog.id]
+  segment_id uuid [ref: > worklogsegment.id]
+  amount numeric [not null]
+  reason varchar(255) [not null]
+  effective_date date [not null]
+  is_settled boolean [not null]
+  created_at timestamp [not null]
+}
+
+Table remittance {
+  id uuid [pk]
+  user_id uuid [not null, ref: > user.id]
+  period_start date [not null]
+  period_end date [not null]
+  total_amount numeric [not null]
+  status varchar(50) [not null]
+  created_at timestamp [not null]
+}
