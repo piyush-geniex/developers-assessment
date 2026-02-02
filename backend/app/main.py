@@ -1,33 +1,69 @@
-import sentry_sdk
+"""
+FastAPI Application Entry Point
+"""
 from fastapi import FastAPI
-from fastapi.routing import APIRoute
-from starlette.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
-from app.api.main import api_router
-from app.core.config import settings
+from .config import get_settings
+from .database import create_db_and_tables
+from .routers import worklogs_router, freelancers_router, payments_router
+
+settings = get_settings()
 
 
-def custom_generate_unique_id(route: APIRoute) -> str:
-    return f"{route.tags[0]}-{route.name}"
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events"""
+    # Startup
+    print("🚀 Starting WorkLog Payment Dashboard API...")
+    create_db_and_tables()
+    print("✅ Database tables ready")
+    yield
+    # Shutdown
+    print("👋 Shutting down...")
 
-
-if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
-    sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    generate_unique_id_function=custom_generate_unique_id,
+    title=settings.app_name,
+    description="Admin dashboard API for managing freelancer worklogs and processing payments",
+    version="1.0.0",
+    lifespan=lifespan,
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# Set all CORS enabled origins
-if settings.all_cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.all_cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# Configure CORS
+origins = [origin.strip() for origin in settings.cors_origins.split(",")]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+# Register routers
+app.include_router(worklogs_router)
+app.include_router(freelancers_router)
+app.include_router(payments_router)
+
+
+@app.get("/", tags=["health"])
+async def root():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "app": settings.app_name,
+        "version": "1.0.0"
+    }
+
+
+@app.get("/health", tags=["health"])
+async def health_check():
+    """Detailed health check"""
+    return {
+        "status": "healthy",
+        "database": "connected",
+        "api": "operational"
+    }
