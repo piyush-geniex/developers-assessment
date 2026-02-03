@@ -1,6 +1,6 @@
 """Service layer for freelancer portal operations."""
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from fastapi import HTTPException
@@ -29,6 +29,20 @@ from app.models import (
 # Constants for validation
 MAX_TIME_ENTRY_AGE_DAYS = 90  # Don't allow time entries older than 90 days
 MAX_FUTURE_TIME_DAYS = 1  # Allow at most 1 day in the future (timezone tolerance)
+
+
+def _build_time_entry_public(entry: TimeEntry) -> TimeEntryPublic:
+    """Convert a TimeEntry to TimeEntryPublic with calculated duration."""
+    duration = int((entry.end_time - entry.start_time).total_seconds() / 60)
+    return TimeEntryPublic(
+        id=entry.id,
+        work_log_id=entry.work_log_id,
+        start_time=entry.start_time,
+        end_time=entry.end_time,
+        notes=entry.notes,
+        duration_minutes=duration,
+        created_at=entry.created_at,
+    )
 
 
 class FreelancerPortalService:
@@ -251,7 +265,7 @@ class FreelancerPortalService:
             created_at=worklog.created_at,
             updated_at=worklog.updated_at,
             freelancer=FreelancerPublic.model_validate(freelancer),
-            time_entries=[TimeEntryPublic.model_validate(e) for e in entries],
+            time_entries=[_build_time_entry_public(e) for e in entries],
             total_duration_minutes=total_minutes,
             total_amount=total_amount,
         )
@@ -273,7 +287,7 @@ class FreelancerPortalService:
         session.flush()  # Get the worklog ID
 
         # Create time entries with validation
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         min_allowed_time = now - timedelta(days=MAX_TIME_ENTRY_AGE_DAYS)
         max_allowed_time = now + timedelta(days=MAX_FUTURE_TIME_DAYS)
 
@@ -344,7 +358,7 @@ class FreelancerPortalService:
         if data.task_description is not None:
             worklog.task_description = data.task_description
 
-        worklog.updated_at = datetime.utcnow()
+        worklog.updated_at = datetime.now(timezone.utc)
         session.add(worklog)
         session.commit()
 
@@ -400,7 +414,7 @@ class FreelancerPortalService:
             )
 
         # Validate time bounds
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         min_allowed_time = now - timedelta(days=MAX_TIME_ENTRY_AGE_DAYS)
         max_allowed_time = now + timedelta(days=MAX_FUTURE_TIME_DAYS)
 
@@ -425,13 +439,13 @@ class FreelancerPortalService:
         session.add(entry)
 
         # Update worklog timestamp
-        worklog.updated_at = datetime.utcnow()
+        worklog.updated_at = datetime.now(timezone.utc)
         session.add(worklog)
 
         session.commit()
         session.refresh(entry)
 
-        return TimeEntryPublic.model_validate(entry)
+        return _build_time_entry_public(entry)
 
     @staticmethod
     def update_time_entry(
@@ -476,13 +490,13 @@ class FreelancerPortalService:
         session.add(entry)
 
         # Update worklog timestamp
-        worklog.updated_at = datetime.utcnow()
+        worklog.updated_at = datetime.now(timezone.utc)
         session.add(worklog)
 
         session.commit()
         session.refresh(entry)
 
-        return TimeEntryPublic.model_validate(entry)
+        return _build_time_entry_public(entry)
 
     @staticmethod
     def delete_time_entry(
@@ -524,7 +538,7 @@ class FreelancerPortalService:
         session.delete(entry)
 
         # Update worklog timestamp
-        worklog.updated_at = datetime.utcnow()
+        worklog.updated_at = datetime.now(timezone.utc)
         session.add(worklog)
 
         session.commit()
