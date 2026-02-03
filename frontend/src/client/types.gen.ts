@@ -9,6 +9,12 @@ export type Body_login_login_access_token = {
     client_secret?: (string | null);
 };
 
+export type FreelancerCreate = {
+    name: string;
+    email: string;
+    hourly_rate: number;
+};
+
 export type HTTPValidationError = {
     detail?: Array<ValidationError>;
 };
@@ -35,6 +41,11 @@ export type ItemUpdate = {
     description?: (string | null);
 };
 
+export type MarkPaidRequest = {
+    task_ids: Array<(number)>;
+    payment_batch_id: string;
+};
+
 export type Message = {
     message: string;
 };
@@ -49,6 +60,19 @@ export type PrivateUserCreate = {
     password: string;
     full_name: string;
     is_verified?: boolean;
+};
+
+export type TaskCreate = {
+    name: string;
+    description?: (string | null);
+};
+
+export type TimeEntryCreate = {
+    freelancer_id: number;
+    task_id: number;
+    hours: number;
+    description?: (string | null);
+    logged_at: string;
 };
 
 export type Token = {
@@ -232,3 +256,41 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type WorklogsCreateFreelancerData = {
+    requestBody: FreelancerCreate;
+};
+
+export type WorklogsCreateFreelancerResponse = (unknown);
+
+export type WorklogsCreateTaskData = {
+    requestBody: TaskCreate;
+};
+
+export type WorklogsCreateTaskResponse = (unknown);
+
+export type WorklogsCreateTimeEntryData = {
+    requestBody: TimeEntryCreate;
+};
+
+export type WorklogsCreateTimeEntryResponse = (unknown);
+
+export type WorklogsListWorklogsData = {
+    dtFrom?: (string | null);
+    dtTo?: (string | null);
+    paymentStatus?: (string | null);
+};
+
+export type WorklogsListWorklogsResponse = (unknown);
+
+export type WorklogsGetWorklogDetailData = {
+    taskId: number;
+};
+
+export type WorklogsGetWorklogDetailResponse = (unknown);
+
+export type WorklogsMarkPaidData = {
+    requestBody: MarkPaidRequest;
+};
+
+export type WorklogsMarkPaidResponse = (unknown);

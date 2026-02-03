@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, WorklogsCreateFreelancerData, WorklogsCreateFreelancerResponse, WorklogsCreateTaskData, WorklogsCreateTaskResponse, WorklogsCreateTimeEntryData, WorklogsCreateTimeEntryResponse, WorklogsListWorklogsData, WorklogsListWorklogsResponse, WorklogsGetWorklogDetailData, WorklogsGetWorklogDetailResponse, WorklogsMarkPaidData, WorklogsMarkPaidResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -463,6 +463,128 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class WorklogsService {
+    /**
+     * Create Freelancer
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static createFreelancer(data: WorklogsCreateFreelancerData): CancelablePromise<WorklogsCreateFreelancerResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/worklogs/freelancers',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Task
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static createTask(data: WorklogsCreateTaskData): CancelablePromise<WorklogsCreateTaskResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/worklogs/tasks',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Time Entry
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static createTimeEntry(data: WorklogsCreateTimeEntryData): CancelablePromise<WorklogsCreateTimeEntryResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/worklogs/entries',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * List Worklogs
+     * @param data The data for the request.
+     * @param data.dtFrom
+     * @param data.dtTo
+     * @param data.paymentStatus
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static listWorklogs(data: WorklogsListWorklogsData = {}): CancelablePromise<WorklogsListWorklogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/worklogs/',
+            query: {
+                dt_from: data.dtFrom,
+                dt_to: data.dtTo,
+                payment_status: data.paymentStatus
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Get Worklog Detail
+     * @param data The data for the request.
+     * @param data.taskId
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static getWorklogDetail(data: WorklogsGetWorklogDetailData): CancelablePromise<WorklogsGetWorklogDetailResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/worklogs/{task_id}',
+            path: {
+                task_id: data.taskId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Mark Paid
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns unknown Successful Response
+     * @throws ApiError
+     */
+    public static markPaid(data: WorklogsMarkPaidData): CancelablePromise<WorklogsMarkPaidResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/worklogs/mark-paid',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }
