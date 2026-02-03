@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime
+from enum import Enum
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -38,12 +40,19 @@ class UpdatePassword(SQLModel):
     current_password: str = Field(min_length=8, max_length=128)
     new_password: str = Field(min_length=8, max_length=128)
 
+class RemittanceStatus(str, Enum):
+    PENDING = "PENDING"
+    PAID = "PAID"
+    FAILED = "FAILED"
 
 # Database model, database table inferred from class name
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+
+    work_logs: list["WorkLog"] = Relationship(back_populates="user")
+    remittances: list["Remittance"] = Relationship(back_populates="user")
 
 
 # Properties to return via API, id is always required
@@ -91,8 +100,56 @@ class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
 
+# WORK LOGGING SYSTEM
+class WorkLog(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
 
-# Generic message
+    title: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    user: User = Relationship(back_populates="work_logs")
+    time_segments: list["TimeSegment"] = Relationship(back_populates="work_log")
+
+
+class TimeSegment(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    work_log_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+
+    minutes: int  # can be negative for deductions
+    hourly_rate: float  # snapshot rate
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    work_log: WorkLog = Relationship(back_populates="time_segments")
+    remittance_item: "RemittanceItem" | None = Relationship(back_populates="time_segment")
+
+    @property
+    def amount(self) -> float:
+        return (self.minutes / 60) * self.hourly_rate
+
+# REMITTANCE SYSTEM
+class Remittance(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+
+    total_amount: float
+    status: RemittanceStatus = Field(default=RemittanceStatus.PENDING)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    user: User = Relationship(back_populates="remittances")
+    items: list["RemittanceItem"] = Relationship(back_populates="remittance")
+
+
+class RemittanceItem(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    remittance_id: uuid.UUID = Field(foreign_key="remittance.id", nullable=False)
+    time_segment_id: uuid.UUID = Field(foreign_key="timesegment.id", nullable=False)
+
+    amount_covered: float  # snapshot of paid amount
+
+    remittance: Remittance = Relationship(back_populates="items")
+    time_segment: TimeSegment = Relationship(back_populates="remittance_item")
+
 class Message(SQLModel):
     message: str
 

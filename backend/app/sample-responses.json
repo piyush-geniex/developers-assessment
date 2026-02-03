@@ -1,0 +1,22 @@
+{
+  "POST /billing/generate-remittances-for-all-users": {
+    "message": "Generated 2 remittances.",
+    "remittances": ["a3fa85f6-5717-4562-b3fc-2c963f66afa6", "b4a20540-3422-4806-a2e1-432567223300"]
+  },
+  "GET /billing/list-all-worklogs?remittanceStatus=UNREMITTED": [
+    {
+      "id": "c2b12f64-1234-4562-b3fc-2c963f66afa6",
+      "title": "Backend API Development",
+      "user_id": "d9f85f64-5717-4562-b3fc-2c963f66afa6",
+      "total_amount": 150.5,
+      "status": "UNREMITTED"
+    },
+    {
+      "id": "e8c44c21-9981-4c21-9a5f-123456789abc",
+      "title": "Legacy Code Refactor",
+      "user_id": "d9f85f64-5717-4562-b3fc-2c963f66afa6",
+      "total_amount": 400.0,
+      "status": "UNREMITTED"
+    }
+  ]
+}

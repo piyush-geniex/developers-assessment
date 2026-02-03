@@ -1,0 +1,45 @@
+Table user {
+  id uuid [pk]
+  email varchar [unique, not null]
+  full_name varchar
+  is_active boolean [not null]
+  is_superuser boolean [not null]
+  hashed_password varchar [not null]
+}
+
+Table item {
+  id uuid [pk]
+  owner_id uuid [not null, ref: > user.id]
+  title varchar [not null]
+  description varchar
+}
+
+Table worklog {
+  id uuid [pk]
+  user_id uuid [not null, ref: > user.id]
+  title varchar [not null]
+  created_at timestamp [not null]
+}
+
+Table timesegment {
+  id uuid [pk]
+  work_log_id uuid [not null, ref: > worklog.id]
+  minutes int [not null, note: "Can be negative for adjustments"]
+  hourly_rate float [not null, note: "Snapshot of rate at time of work"]
+  created_at timestamp [not null]
+}
+
+Table remittance {
+  id uuid [pk]
+  user_id uuid [not null, ref: > user.id]
+  total_amount float [not null]
+  status varchar [not null, note: "PENDING, PAID, FAILED"]
+  created_at timestamp [not null]
+}
+
+Table remittanceitem {
+  id uuid [pk]
+  remittance_id uuid [not null, ref: > remittance.id]
+  time_segment_id uuid [not null, ref: > timesegment.id]
+  amount_covered float [not null, note: "Snapshot of amount paid for this segment"]
+}
