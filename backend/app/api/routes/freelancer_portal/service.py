@@ -1,10 +1,10 @@
 """Service layer for freelancer portal operations."""
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from fastapi import HTTPException
-from sqlalchemy import func
+from sqlalchemy import case, extract, func
 from sqlmodel import Session, select
 
 from app.models import (
@@ -26,6 +26,11 @@ from app.models import (
 )
 
 
+# Constants for validation
+MAX_TIME_ENTRY_AGE_DAYS = 90  # Don't allow time entries older than 90 days
+MAX_FUTURE_TIME_DAYS = 1  # Allow at most 1 day in the future (timezone tolerance)
+
+
 class FreelancerPortalService:
     """Service for freelancer portal operations."""
 
@@ -34,56 +39,84 @@ class FreelancerPortalService:
         session: Session,
         freelancer: Freelancer,
     ) -> FreelancerDashboardStats:
-        """Get dashboard statistics for a freelancer."""
+        """
+        Get dashboard statistics for a freelancer.
+        Optimized to use a single aggregated database query instead of N+1 queries.
+        """
         freelancer_id = freelancer.id
+        hourly_rate = freelancer.hourly_rate
 
-        # Count worklogs by status
-        worklogs = session.exec(
-            select(WorkLog).where(WorkLog.freelancer_id == freelancer_id)
-        ).all()
-
-        status_counts = {
-            "pending": 0,
-            "approved": 0,
-            "paid": 0,
-            "rejected": 0,
-        }
-        for wl in worklogs:
-            status_counts[wl.status.value] += 1
-
-        # Calculate hours and amounts
-        total_hours = Decimal("0")
-        total_earned = Decimal("0")
-        pending_amount = Decimal("0")
-
-        for wl in worklogs:
-            # Get time entries for this worklog
-            entries = session.exec(
-                select(TimeEntry).where(TimeEntry.work_log_id == wl.id)
-            ).all()
-
-            total_minutes = sum(
-                (e.end_time - e.start_time).total_seconds() / 60 for e in entries
+        # Single aggregated query to get all stats
+        # This replaces the N+1 query pattern with a single database call
+        stats_query = (
+            select(
+                # Count worklogs by status using conditional aggregation
+                func.count(WorkLog.id).label("total_worklogs"),
+                func.sum(case((WorkLog.status == WorkLogStatus.PENDING, 1), else_=0)).label("pending_count"),
+                func.sum(case((WorkLog.status == WorkLogStatus.APPROVED, 1), else_=0)).label("approved_count"),
+                func.sum(case((WorkLog.status == WorkLogStatus.PAID, 1), else_=0)).label("paid_count"),
+                func.sum(case((WorkLog.status == WorkLogStatus.REJECTED, 1), else_=0)).label("rejected_count"),
             )
-            hours = Decimal(total_minutes) / Decimal(60)
-            amount = hours * freelancer.hourly_rate
+            .where(WorkLog.freelancer_id == freelancer_id)
+        )
 
-            total_hours += hours
+        stats_result = session.exec(stats_query).one()
 
-            if wl.status == WorkLogStatus.PAID:
-                total_earned += amount
-            elif wl.status in [WorkLogStatus.PENDING, WorkLogStatus.APPROVED]:
-                pending_amount += amount
+        # Get time-based aggregations with status breakdown
+        time_stats_query = (
+            select(
+                func.coalesce(
+                    func.sum(
+                        extract('epoch', TimeEntry.end_time - TimeEntry.start_time) / 60
+                    ),
+                    0
+                ).label("total_minutes"),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (WorkLog.status == WorkLogStatus.PAID,
+                             extract('epoch', TimeEntry.end_time - TimeEntry.start_time) / 60),
+                            else_=0
+                        )
+                    ),
+                    0
+                ).label("paid_minutes"),
+                func.coalesce(
+                    func.sum(
+                        case(
+                            (WorkLog.status.in_([WorkLogStatus.PENDING, WorkLogStatus.APPROVED]),
+                             extract('epoch', TimeEntry.end_time - TimeEntry.start_time) / 60),
+                            else_=0
+                        )
+                    ),
+                    0
+                ).label("pending_minutes"),
+            )
+            .select_from(TimeEntry)
+            .join(WorkLog, TimeEntry.work_log_id == WorkLog.id)
+            .where(WorkLog.freelancer_id == freelancer_id)
+        )
+
+        time_result = session.exec(time_stats_query).one()
+
+        # Calculate amounts from minutes
+        total_minutes = Decimal(str(time_result.total_minutes or 0))
+        paid_minutes = Decimal(str(time_result.paid_minutes or 0))
+        pending_minutes = Decimal(str(time_result.pending_minutes or 0))
+
+        total_hours = (total_minutes / Decimal(60)).quantize(Decimal("0.01"))
+        total_earned = ((paid_minutes / Decimal(60)) * hourly_rate).quantize(Decimal("0.01"))
+        pending_amount = ((pending_minutes / Decimal(60)) * hourly_rate).quantize(Decimal("0.01"))
 
         return FreelancerDashboardStats(
-            total_worklogs=len(worklogs),
-            pending_worklogs=status_counts["pending"],
-            approved_worklogs=status_counts["approved"],
-            paid_worklogs=status_counts["paid"],
-            rejected_worklogs=status_counts["rejected"],
-            total_hours_logged=total_hours.quantize(Decimal("0.01")),
-            total_earned=total_earned.quantize(Decimal("0.01")),
-            pending_amount=pending_amount.quantize(Decimal("0.01")),
+            total_worklogs=stats_result.total_worklogs or 0,
+            pending_worklogs=stats_result.pending_count or 0,
+            approved_worklogs=stats_result.approved_count or 0,
+            paid_worklogs=stats_result.paid_count or 0,
+            rejected_worklogs=stats_result.rejected_count or 0,
+            total_hours_logged=total_hours,
+            total_earned=total_earned,
+            pending_amount=pending_amount,
         )
 
     @staticmethod
@@ -94,53 +127,82 @@ class FreelancerPortalService:
         limit: int = 100,
         status: list[WorkLogStatus] | None = None,
     ) -> WorkLogsSummaryPublic:
-        """Get worklogs for the current freelancer with aggregated data."""
+        """
+        Get worklogs for the current freelancer with aggregated data.
+        Optimized to use a single query with JOIN instead of N+1 queries.
+        """
         freelancer_id = freelancer.id
 
-        # Build base query
-        query = select(WorkLog).where(WorkLog.freelancer_id == freelancer_id)
+        # Build subquery for time entry aggregation
+        duration_subquery = (
+            select(
+                TimeEntry.work_log_id,
+                func.coalesce(
+                    func.sum(
+                        extract('epoch', TimeEntry.end_time - TimeEntry.start_time) / 60
+                    ),
+                    0
+                ).label('total_minutes'),
+                func.count(TimeEntry.id).label('entry_count')
+            )
+            .group_by(TimeEntry.work_log_id)
+            .subquery()
+        )
+
+        # Main query with aggregated data
+        query = (
+            select(
+                WorkLog.id,
+                WorkLog.task_description,
+                WorkLog.status,
+                WorkLog.created_at,
+                func.coalesce(duration_subquery.c.total_minutes, 0).label('total_duration_minutes'),
+                func.coalesce(duration_subquery.c.entry_count, 0).label('time_entry_count'),
+            )
+            .outerjoin(duration_subquery, WorkLog.id == duration_subquery.c.work_log_id)
+            .where(WorkLog.freelancer_id == freelancer_id)
+        )
 
         if status:
             query = query.where(WorkLog.status.in_(status))
 
-        query = query.order_by(WorkLog.created_at.desc())
-
         # Get total count
-        count_query = select(func.count()).select_from(
-            query.subquery()
+        count_query = (
+            select(func.count())
+            .select_from(WorkLog)
+            .where(WorkLog.freelancer_id == freelancer_id)
         )
+        if status:
+            count_query = count_query.where(WorkLog.status.in_(status))
+
         total_count = session.exec(count_query).one()
 
         # Get paginated results
-        worklogs = session.exec(query.offset(skip).limit(limit)).all()
+        results = session.exec(
+            query.order_by(WorkLog.created_at.desc()).offset(skip).limit(limit)
+        ).all()
 
-        # Build summary for each worklog
+        # Build summaries from aggregated results
         summaries = []
-        for wl in worklogs:
-            entries = session.exec(
-                select(TimeEntry).where(TimeEntry.work_log_id == wl.id)
-            ).all()
-
-            total_minutes = sum(
-                int((e.end_time - e.start_time).total_seconds() / 60) for e in entries
-            )
+        for row in results:
+            total_minutes = int(row.total_duration_minutes or 0)
             total_amount = (
                 Decimal(total_minutes) / Decimal(60) * freelancer.hourly_rate
             ).quantize(Decimal("0.01"))
 
             summaries.append(
                 WorkLogSummary(
-                    id=wl.id,
-                    task_description=wl.task_description,
+                    id=row.id,
+                    task_description=row.task_description,
                     freelancer_id=freelancer_id,
                     freelancer_name=freelancer.name,
                     freelancer_email=freelancer.email,
                     hourly_rate=freelancer.hourly_rate,
-                    status=wl.status,
-                    created_at=wl.created_at,
+                    status=row.status,
+                    created_at=row.created_at,
                     total_duration_minutes=total_minutes,
                     total_amount=total_amount,
-                    time_entry_count=len(entries),
+                    time_entry_count=row.time_entry_count or 0,
                 )
             )
 
@@ -210,12 +272,30 @@ class FreelancerPortalService:
         session.add(worklog)
         session.flush()  # Get the worklog ID
 
-        # Create time entries
+        # Create time entries with validation
+        now = datetime.utcnow()
+        min_allowed_time = now - timedelta(days=MAX_TIME_ENTRY_AGE_DAYS)
+        max_allowed_time = now + timedelta(days=MAX_FUTURE_TIME_DAYS)
+
         for entry_data in data.time_entries:
+            # Validate time order
             if entry_data.end_time <= entry_data.start_time:
                 raise HTTPException(
                     status_code=400,
                     detail="End time must be after start time"
+                )
+
+            # Validate time bounds
+            if entry_data.start_time < min_allowed_time:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Time entries cannot be older than {MAX_TIME_ENTRY_AGE_DAYS} days"
+                )
+
+            if entry_data.end_time > max_allowed_time:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Time entries cannot be in the future"
                 )
 
             entry = TimeEntry(
@@ -312,10 +392,28 @@ class FreelancerPortalService:
 
         FreelancerPortalService._check_worklog_editable(worklog)
 
+        # Validate time order
         if data.end_time <= data.start_time:
             raise HTTPException(
                 status_code=400,
                 detail="End time must be after start time"
+            )
+
+        # Validate time bounds
+        now = datetime.utcnow()
+        min_allowed_time = now - timedelta(days=MAX_TIME_ENTRY_AGE_DAYS)
+        max_allowed_time = now + timedelta(days=MAX_FUTURE_TIME_DAYS)
+
+        if data.start_time < min_allowed_time:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Time entries cannot be older than {MAX_TIME_ENTRY_AGE_DAYS} days"
+            )
+
+        if data.end_time > max_allowed_time:
+            raise HTTPException(
+                status_code=400,
+                detail="Time entries cannot be in the future"
             )
 
         entry = TimeEntry(
@@ -430,12 +528,32 @@ class FreelancerPortalService:
         session: Session,
         freelancer: Freelancer,
     ) -> list[FreelancerPaymentInfo]:
-        """Get payment history for the freelancer."""
-        # Find all payment batches that include this freelancer's worklogs
+        """
+        Get payment history for the freelancer.
+        Optimized to use a single aggregated query.
+        """
+        freelancer_id = freelancer.id
+        hourly_rate = freelancer.hourly_rate
+
+        # Single query to get all payment info with aggregated amounts
         query = (
-            select(PaymentBatch, func.count(WorkLog.id).label("worklog_count"))
+            select(
+                PaymentBatch.id,
+                PaymentBatch.processed_at,
+                PaymentBatch.notes,
+                PaymentBatch.status,
+                func.count(WorkLog.id).label("worklog_count"),
+                func.coalesce(
+                    func.sum(
+                        extract('epoch', TimeEntry.end_time - TimeEntry.start_time) / 60
+                    ),
+                    0
+                ).label("total_minutes"),
+            )
+            .select_from(PaymentBatch)
             .join(WorkLog, PaymentBatch.id == WorkLog.payment_batch_id)
-            .where(WorkLog.freelancer_id == freelancer.id)
+            .join(TimeEntry, WorkLog.id == TimeEntry.work_log_id)
+            .where(WorkLog.freelancer_id == freelancer_id)
             .group_by(PaymentBatch.id)
             .order_by(PaymentBatch.processed_at.desc())
         )
@@ -443,34 +561,18 @@ class FreelancerPortalService:
         results = session.exec(query).all()
 
         payments = []
-        for batch, worklog_count in results:
-            # Calculate amount for this freelancer in this batch
-            freelancer_worklogs = session.exec(
-                select(WorkLog)
-                .where(WorkLog.payment_batch_id == batch.id)
-                .where(WorkLog.freelancer_id == freelancer.id)
-            ).all()
-
-            total_amount = Decimal("0")
-            for wl in freelancer_worklogs:
-                entries = session.exec(
-                    select(TimeEntry).where(TimeEntry.work_log_id == wl.id)
-                ).all()
-                total_minutes = sum(
-                    (e.end_time - e.start_time).total_seconds() / 60 for e in entries
-                )
-                total_amount += (
-                    Decimal(total_minutes) / Decimal(60) * freelancer.hourly_rate
-                )
+        for row in results:
+            total_minutes = Decimal(str(row.total_minutes or 0))
+            total_amount = ((total_minutes / Decimal(60)) * hourly_rate).quantize(Decimal("0.01"))
 
             payments.append(
                 FreelancerPaymentInfo(
-                    batch_id=batch.id,
-                    processed_at=batch.processed_at,
-                    total_amount=total_amount.quantize(Decimal("0.01")),
-                    worklog_count=len(freelancer_worklogs),
-                    notes=batch.notes,
-                    status=batch.status,
+                    batch_id=row.id,
+                    processed_at=row.processed_at,
+                    total_amount=total_amount,
+                    worklog_count=row.worklog_count,
+                    notes=row.notes,
+                    status=row.status,
                 )
             )
 

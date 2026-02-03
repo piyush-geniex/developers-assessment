@@ -35,7 +35,7 @@ class PaymentBatchStatus(str, Enum):
 class FreelancerBase(SQLModel):
     name: str = Field(max_length=255, min_length=1)
     email: EmailStr = Field(unique=True, index=True, max_length=255)
-    hourly_rate: Decimal = Field(default=Decimal("50.00"), decimal_places=2, ge=0)
+    hourly_rate: Decimal = Field(default=Decimal("50.00"), decimal_places=2, ge=0, le=10000)
     is_active: bool = True
 
 
@@ -48,13 +48,13 @@ class FreelancerRegister(SQLModel):
     name: str = Field(max_length=255, min_length=1)
     email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=128)
-    hourly_rate: Decimal = Field(default=Decimal("50.00"), decimal_places=2, ge=0)
+    hourly_rate: Decimal = Field(default=Decimal("50.00"), decimal_places=2, ge=0, le=10000)
 
 
 class FreelancerUpdate(SQLModel):
     name: str | None = Field(default=None, max_length=255, min_length=1)
     email: EmailStr | None = Field(default=None, max_length=255)
-    hourly_rate: Decimal | None = Field(default=None, decimal_places=2, ge=0)
+    hourly_rate: Decimal | None = Field(default=None, decimal_places=2, ge=0, le=10000)
     is_active: bool | None = None
 
 
@@ -435,7 +435,7 @@ class FreelancerPublicMe(FreelancerBase):
 class FreelancerUpdateMe(SQLModel):
     """Fields a freelancer can update about themselves"""
     name: str | None = Field(default=None, max_length=255, min_length=1)
-    hourly_rate: Decimal | None = Field(default=None, decimal_places=2, ge=0)
+    hourly_rate: Decimal | None = Field(default=None, decimal_places=2, ge=0, le=10000)
 
 
 class FreelancerUpdatePassword(SQLModel):

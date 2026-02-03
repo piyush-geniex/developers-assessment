@@ -49,6 +49,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
+import { formatCurrency, formatDuration, formatDate } from "@/lib/formatters"
 import useCustomToast from "@/hooks/useCustomToast"
 import CreateWorkLogDialog from "@/components/FreelancerPortal/CreateWorkLogDialog"
 import FreelancerWorkLogDetailSheet from "@/components/FreelancerPortal/WorkLogDetailSheet"
@@ -73,31 +74,6 @@ const statusConfig: Record<
   approved: { label: "Approved", variant: "default", icon: CheckCircle2 },
   paid: { label: "Paid", variant: "outline", icon: DollarSign },
   rejected: { label: "Rejected", variant: "destructive", icon: XCircle },
-}
-
-// Format helpers
-function formatCurrency(amount: string | number) {
-  const num = typeof amount === "string" ? Number.parseFloat(amount) : amount
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(num)
-}
-
-function formatDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
-}
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
 }
 
 function WorkLogsSkeleton() {

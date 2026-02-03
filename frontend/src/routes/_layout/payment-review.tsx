@@ -47,27 +47,11 @@ import {
 import { Input } from "@/components/ui/input"
 import useCustomToast from "@/hooks/useCustomToast"
 import { cn } from "@/lib/utils"
+import { formatCurrency, formatDuration, parseAndValidateIds } from "@/lib/formatters"
 
 export const Route = createFileRoute("/_layout/payment-review" as any)({
   component: PaymentReview,
 })
-
-// Format helpers
-function formatCurrency(amount: string | number) {
-  const num = typeof amount === "string" ? Number.parseFloat(amount) : amount
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(num)
-}
-
-function formatDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
-}
 
 // Freelancer Breakdown Card
 function FreelancerCard({
@@ -343,9 +327,9 @@ function PaymentReview() {
   const searchParams = useSearch({ strict: false }) as { ids?: string }
   const ids = searchParams.ids || ""
 
-  // Parse worklog IDs from URL
+  // Parse and validate worklog IDs from URL
   const worklogIds = useMemo(() => {
-    return ids ? ids.split(",").filter(Boolean) : []
+    return parseAndValidateIds(ids)
   }, [ids])
 
   // State

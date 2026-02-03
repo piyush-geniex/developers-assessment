@@ -27,6 +27,11 @@ from app.models import (
 )
 
 
+# Constants for validation
+MAX_HOURLY_RATE = Decimal("10000.00")
+MAX_SINGLE_PAYMENT = Decimal("1000000.00")  # $1M max per batch
+
+
 class PaymentService:
     @staticmethod
     def get_payment_batches(
@@ -260,47 +265,85 @@ class PaymentService:
         """
         Process payment for selected worklogs.
         Creates a payment batch and updates worklog statuses.
+        Uses pessimistic locking to prevent race conditions.
         """
         if not request.worklog_ids:
             raise HTTPException(
                 status_code=400, detail="No worklogs selected for payment"
             )
 
-        # Get preview to validate
+        # Use FOR UPDATE to lock the worklogs and prevent race conditions
+        # This ensures no other transaction can modify these worklogs until we commit
+        locked_worklogs = session.exec(
+            select(WorkLog)
+            .where(WorkLog.id.in_(request.worklog_ids))
+            .with_for_update()
+        ).all()
+
+        # Check for idempotency - ensure none are already paid or in a batch
+        already_paid = [wl for wl in locked_worklogs if wl.status == WorkLogStatus.PAID]
+        if already_paid:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot process payment. {len(already_paid)} worklog(s) already paid: "
+                       f"{[str(wl.id) for wl in already_paid[:3]]}{'...' if len(already_paid) > 3 else ''}"
+            )
+
+        already_in_batch = [wl for wl in locked_worklogs if wl.payment_batch_id is not None]
+        if already_in_batch:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Cannot process payment. {len(already_in_batch)} worklog(s) already in a payment batch"
+            )
+
+        # Get preview to validate (using already locked worklogs data)
         preview = PaymentService.preview_payment(session, request.worklog_ids)
 
         if not preview.can_process:
+            # Return specific issues in the error response
+            issues_detail = "; ".join([f"{i.issue_type}: {i.message}" for i in preview.issues[:5]])
             raise HTTPException(
                 status_code=400,
-                detail="Cannot process payment. Check issues in preview.",
+                detail=f"Cannot process payment. Issues: {issues_detail}"
             )
 
-        # Create payment batch
+        # Validate total amount is within limits
+        if preview.total_amount > MAX_SINGLE_PAYMENT:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Payment amount ${preview.total_amount} exceeds maximum allowed ${MAX_SINGLE_PAYMENT}"
+            )
+
+        # Create payment batch with PROCESSING status first
         batch = PaymentBatch(
             processed_by_id=current_user.id,
             total_amount=preview.total_amount,
-            status=PaymentBatchStatus.COMPLETED,
+            status=PaymentBatchStatus.PROCESSING,
             notes=request.notes,
         )
         session.add(batch)
         session.flush()  # Get the batch ID
 
-        # Update worklogs
-        valid_ids = [wl.id for fb in preview.freelancer_breakdown for wl in fb.worklogs]
-        for worklog_id in valid_ids:
-            worklog = session.get(WorkLog, worklog_id)
-            if worklog and worklog.status != WorkLogStatus.PAID:
+        # Update worklogs atomically
+        valid_ids = {wl.id for fb in preview.freelancer_breakdown for wl in fb.worklogs}
+        updated_count = 0
+        for worklog in locked_worklogs:
+            if worklog.id in valid_ids and worklog.status != WorkLogStatus.PAID:
                 worklog.status = WorkLogStatus.PAID
                 worklog.payment_batch_id = batch.id
                 worklog.updated_at = datetime.utcnow()
                 session.add(worklog)
+                updated_count += 1
+
+        # Mark batch as completed after all worklogs are updated
+        batch.status = PaymentBatchStatus.COMPLETED
 
         session.commit()
         session.refresh(batch)
 
         return PaymentProcessResponse(
             batch_id=batch.id,
-            total_worklogs=preview.total_worklogs,
+            total_worklogs=updated_count,
             total_amount=preview.total_amount,
             status=batch.status,
         )

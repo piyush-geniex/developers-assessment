@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import { formatCurrency, formatDateTime } from "@/lib/formatters"
 
 export const Route = (createFileRoute as any)("/_layout/payment-history")({
   component: PaymentHistory,
@@ -35,25 +36,6 @@ export const Route = (createFileRoute as any)("/_layout/payment-history")({
     ],
   }),
 })
-
-// Format helpers
-function formatCurrency(amount: string | number) {
-  const num = typeof amount === "string" ? Number.parseFloat(amount) : amount
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(num)
-}
-
-function formatDateTime(dateString: string) {
-  return new Date(dateString).toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  })
-}
 
 // Status badge
 function StatusBadge({ status }: { status: string }) {

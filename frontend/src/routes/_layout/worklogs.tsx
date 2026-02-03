@@ -13,7 +13,7 @@ import {
   CreditCard,
   ChevronRight,
 } from "lucide-react"
-import { Suspense, useState, useMemo } from "react"
+import { Suspense, useState, useMemo, useCallback } from "react"
 
 import {
   WorkLogsService,
@@ -42,6 +42,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { formatCurrency, formatDuration, formatDate } from "@/lib/formatters"
 import WorkLogDetailSheet from "@/components/WorkLogs/WorkLogDetailSheet"
 
 export const Route = createFileRoute("/_layout/worklogs" as any)({
@@ -64,33 +65,6 @@ const statusConfig: Record<
   approved: { label: "Approved", variant: "default", icon: CheckCircle2 },
   paid: { label: "Paid", variant: "outline", icon: DollarSign },
   rejected: { label: "Rejected", variant: "destructive", icon: XCircle },
-}
-
-// Format currency
-function formatCurrency(amount: string | number) {
-  const num = typeof amount === "string" ? Number.parseFloat(amount) : amount
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(num)
-}
-
-// Format duration
-function formatDuration(minutes: number) {
-  const hours = Math.floor(minutes / 60)
-  const mins = minutes % 60
-  if (hours === 0) return `${mins}m`
-  if (mins === 0) return `${hours}h`
-  return `${hours}h ${mins}m`
-}
-
-// Format date
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
 }
 
 // Stats Card Component
@@ -224,8 +198,8 @@ function WorkLogsContent() {
     }
   }, [filteredWorklogs])
 
-  // Selection handlers
-  const handleSelectAll = (checked: boolean) => {
+  // Memoized selection handlers to prevent unnecessary re-renders
+  const handleSelectAll = useCallback((checked: boolean) => {
     if (checked) {
       const payableIds = filteredWorklogs
         .filter((wl) => wl.status !== "paid" && wl.status !== "rejected")
@@ -234,17 +208,19 @@ function WorkLogsContent() {
     } else {
       setSelectedIds(new Set())
     }
-  }
+  }, [filteredWorklogs])
 
-  const handleSelectOne = (id: string, checked: boolean) => {
-    const newSelected = new Set(selectedIds)
-    if (checked) {
-      newSelected.add(id)
-    } else {
-      newSelected.delete(id)
-    }
-    setSelectedIds(newSelected)
-  }
+  const handleSelectOne = useCallback((id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const newSelected = new Set(prev)
+      if (checked) {
+        newSelected.add(id)
+      } else {
+        newSelected.delete(id)
+      }
+      return newSelected
+    })
+  }, [])
 
   // Get selected worklogs for summary
   const selectedWorklogs = filteredWorklogs.filter((wl) =>
