@@ -1,0 +1,110 @@
+// WorkLog Settlement System Schema
+// Database: PostgreSQL
+
+Table user {
+  id uuid [primary key]
+  email varchar(255) [unique, not null]
+  is_active boolean [not null, default: true]
+  is_superuser boolean [not null, default: false]
+  full_name varchar(255)
+  hashed_password varchar [not null]
+  
+  indexes {
+    email [name: 'ix_user_email']
+  }
+}
+
+Table worklog {
+  id uuid [primary key]
+  user_id uuid [not null, ref: > user.id]
+  task_name varchar(255) [not null]
+  created_at datetime [not null]
+  
+  indexes {
+    user_id [name: 'ix_worklog_user_id']
+    created_at [name: 'ix_worklog_created_at']
+  }
+  
+  Note: 'Container for all work done against a task. Contains multiple time segments and adjustments.'
+}
+
+Table timesegment {
+  id uuid [primary key]
+  worklog_id uuid [not null, ref: > worklog.id]
+  hours float [not null]
+  rate float [not null]
+  recorded_at datetime [not null]
+  is_removed boolean [not null, default: false]
+  
+  indexes {
+    worklog_id [name: 'ix_timesegment_worklog_id']
+    recorded_at [name: 'ix_timesegment_recorded_at']
+  }
+  
+  Note: 'Individual time recording segment. Can be marked as removed without deletion.'
+}
+
+Table adjustment {
+  id uuid [primary key]
+  worklog_id uuid [not null, ref: > worklog.id]
+  amount float [not null]
+  reason varchar(500) [not null]
+  created_at datetime [not null]
+  
+  indexes {
+    worklog_id [name: 'ix_adjustment_worklog_id']
+    created_at [name: 'ix_adjustment_created_at']
+  }
+  
+  Note: 'Retroactive adjustments (deductions or additions) to worklogs. Amount can be negative for deductions.'
+}
+
+Table remittance {
+  id uuid [primary key]
+  user_id uuid [not null, ref: > user.id]
+  amount float [not null]
+  period_start datetime [not null]
+  period_end datetime [not null]
+  status varchar(50) [not null]
+  created_at datetime [not null]
+  completed_at datetime
+  
+  indexes {
+    user_id [name: 'ix_remittance_user_id']
+    period_start [name: 'ix_remittance_period_start']
+    period_end [name: 'ix_remittance_period_end']
+    status [name: 'ix_remittance_status']
+    created_at [name: 'ix_remittance_created_at']
+  }
+  
+  Note: 'Payment attempt for a user in a given period. Status can be: PENDING, COMPLETED, FAILED, CANCELLED'
+}
+
+Table worklogsettlement {
+  id uuid [primary key]
+  worklog_id uuid [not null, ref: > worklog.id]
+  remittance_id uuid [not null, ref: > remittance.id]
+  amount_settled float [not null]
+  created_at datetime [not null]
+  
+  indexes {
+    worklog_id [name: 'ix_worklogsettlement_worklog_id']
+    remittance_id [name: 'ix_worklogsettlement_remittance_id']
+    created_at [name: 'ix_worklogsettlement_created_at']
+  }
+  
+  Note: 'Junction table tracking which worklogs were included in which remittances and for what amount. Enables calculation of unsettled work.'
+}
+
+// Relationships explanation:
+// 1. A User can have many WorkLogs
+// 2. A WorkLog contains many TimeSegments (hours * rate)
+// 3. A WorkLog can have many Adjustments (retroactive changes)
+// 4. A User receives many Remittances (payment attempts)
+// 5. A WorkLogSettlement links WorkLogs to Remittances (many-to-many through junction)
+//
+// Key Design Features:
+// - Financial history is preserved: settlements are never deleted, only new ones added
+// - Worklogs can appear in multiple remittances if additional work is added later
+// - Adjustments can be retroactive, affecting already-settled or unsettled work
+// - Settlement status is calculated dynamically by comparing total work vs settled amounts

@@ -1,0 +1,215 @@
+{
+  "endpoints": {
+    "generate-remittances-for-all-users": {
+      "method": "POST",
+      "url": "/worklogs/generate-remittances-for-all-users",
+      "description": "Generates remittances for all users based on eligible work. Creates a remittance for each user with unsettled work.",
+      "request": {
+        "body": null
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "data": [
+            {
+              "id": "550e8400-e29b-41d4-a716-446655440001",
+              "user_id": "123e4567-e89b-12d3-a456-426614174000",
+              "amount": 2450.00,
+              "period_start": "2026-02-01T00:00:00Z",
+              "period_end": "2026-02-03T15:30:00Z",
+              "status": "COMPLETED",
+              "created_at": "2026-02-03T15:30:00Z",
+              "completed_at": "2026-02-03T15:30:00Z"
+            },
+            {
+              "id": "550e8400-e29b-41d4-a716-446655440002",
+              "user_id": "223e4567-e89b-12d3-a456-426614174001",
+              "amount": 1875.50,
+              "period_start": "2026-02-01T00:00:00Z",
+              "period_end": "2026-02-03T15:30:00Z",
+              "status": "COMPLETED",
+              "created_at": "2026-02-03T15:30:00Z",
+              "completed_at": "2026-02-03T15:30:00Z"
+            }
+          ],
+          "count": 2,
+          "total_amount": 4325.50
+        }
+      },
+      "notes": [
+        "Only users with unsettled work will have remittances generated",
+        "Period is set to current month (start of month to now)",
+        "Each remittance status is set to COMPLETED immediately",
+        "Settlement records are created linking worklogs to remittances"
+      ]
+    },
+    "list-all-worklogs": {
+      "method": "GET",
+      "url": "/worklogs/list-all-worklogs",
+      "description": "Lists all worklogs with filtering and amount information. Response includes the calculated amount per worklog.",
+      "scenarios": [
+        {
+          "name": "All worklogs (no filter)",
+          "request": {
+            "query_params": {}
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "data": [
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440010",
+                  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                  "task_name": "Backend API Development",
+                  "amount": 1200.00,
+                  "created_at": "2026-01-15T10:00:00Z",
+                  "remittance_status": "REMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440011",
+                  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                  "task_name": "Database Schema Design",
+                  "amount": 800.00,
+                  "created_at": "2026-01-20T14:30:00Z",
+                  "remittance_status": "REMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440012",
+                  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                  "task_name": "Frontend Integration",
+                  "amount": 450.00,
+                  "created_at": "2026-02-01T09:00:00Z",
+                  "remittance_status": "UNREMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440013",
+                  "user_id": "223e4567-e89b-12d3-a456-426614174001",
+                  "task_name": "Code Review",
+                  "amount": 300.00,
+                  "created_at": "2026-01-28T16:00:00Z",
+                  "remittance_status": "REMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440014",
+                  "user_id": "223e4567-e89b-12d3-a456-426614174001",
+                  "task_name": "Testing & QA",
+                  "amount": 1575.50,
+                  "created_at": "2026-02-02T11:30:00Z",
+                  "remittance_status": "UNREMITTED"
+                }
+              ],
+              "count": 5
+            }
+          }
+        },
+        {
+          "name": "Filter by REMITTED status",
+          "request": {
+            "query_params": {
+              "remittanceStatus": "REMITTED"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "data": [
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440010",
+                  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                  "task_name": "Backend API Development",
+                  "amount": 1200.00,
+                  "created_at": "2026-01-15T10:00:00Z",
+                  "remittance_status": "REMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440011",
+                  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                  "task_name": "Database Schema Design",
+                  "amount": 800.00,
+                  "created_at": "2026-01-20T14:30:00Z",
+                  "remittance_status": "REMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440013",
+                  "user_id": "223e4567-e89b-12d3-a456-426614174001",
+                  "task_name": "Code Review",
+                  "amount": 300.00,
+                  "created_at": "2026-01-28T16:00:00Z",
+                  "remittance_status": "REMITTED"
+                }
+              ],
+              "count": 3
+            }
+          }
+        },
+        {
+          "name": "Filter by UNREMITTED status",
+          "request": {
+            "query_params": {
+              "remittanceStatus": "UNREMITTED"
+            }
+          },
+          "response": {
+            "status": 200,
+            "body": {
+              "data": [
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440012",
+                  "user_id": "123e4567-e89b-12d3-a456-426614174000",
+                  "task_name": "Frontend Integration",
+                  "amount": 450.00,
+                  "created_at": "2026-02-01T09:00:00Z",
+                  "remittance_status": "UNREMITTED"
+                },
+                {
+                  "id": "a50e8400-e29b-41d4-a716-446655440014",
+                  "user_id": "223e4567-e89b-12d3-a456-426614174001",
+                  "task_name": "Testing & QA",
+                  "amount": 1575.50,
+                  "created_at": "2026-02-02T11:30:00Z",
+                  "remittance_status": "UNREMITTED"
+                }
+              ],
+              "count": 2
+            }
+          }
+        }
+      ],
+      "notes": [
+        "Amount is calculated as: sum(time_segments.hours * time_segments.rate) + sum(adjustments.amount)",
+        "Remittance status is calculated dynamically based on settlement history",
+        "A worklog is REMITTED if all its work has been included in completed remittances",
+        "A worklog is UNREMITTED if there's any unsettled amount (positive or negative)",
+        "Time segments marked as is_removed=true are excluded from calculations"
+      ]
+    }
+  },
+  "data_model_explanation": {
+    "worklog": "Container representing all work done against a task. Does not store amount directly.",
+    "time_segment": "Individual time recording (hours * rate). Multiple segments per worklog. Can be marked removed.",
+    "adjustment": "Retroactive changes to worklog value (can be negative for deductions). Applied after original work.",
+    "remittance": "Payment attempt for a user in a period. Status: PENDING, COMPLETED, FAILED, CANCELLED",
+    "worklog_settlement": "Links worklogs to remittances. Records the amount from each worklog included in each remittance.",
+    "financial_correctness": {
+      "problem": "Historical financial data can change after payment",
+      "solution": "Track settlements separately from work. Calculate unsettled amount as: total_work - sum(settled_in_completed_remittances)",
+      "scenarios": [
+        {
+          "scenario": "Additional work after settlement",
+          "example": "Worklog has $100 settled. Worker adds 5 more hours at $20/hr. Unsettled amount: $100 (new work)",
+          "handling": "Next settlement includes only the $100 unsettled amount"
+        },
+        {
+          "scenario": "Retroactive deduction",
+          "example": "Worklog has $500 settled. Quality issue results in -$100 adjustment. Unsettled amount: -$100",
+          "handling": "Next settlement for user will be reduced by $100 (or carried forward if no other work)"
+        },
+        {
+          "scenario": "Failed payment",
+          "example": "Remittance created for $1000 but status is FAILED. Worklogs remain unsettled.",
+          "handling": "Next settlement run will include the same work again (only COMPLETED remittances count)"
+        }
+      ]
+    }
+  }
+}
