@@ -14,10 +14,20 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
+import { Route as FreelancerLayoutRouteImport } from './routes/_freelancer-layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutWorklogsRouteImport } from './routes/_layout/worklogs'
+import { Route as LayoutPaymentHistoryRouteImport } from './routes/_layout/payment-history'
+import { Route as LayoutPaymentReviewRouteImport } from './routes/_layout/payment-review'
+import { Route as FreelancerLoginRouteImport } from './routes/freelancer/login'
+import { Route as FreelancerRegisterRouteImport } from './routes/freelancer/register'
+import { Route as FreelancerLayoutIndexRouteImport } from './routes/_freelancer-layout/index'
+import { Route as FreelancerLayoutWorklogsRouteImport } from './routes/_freelancer-layout/worklogs'
+import { Route as FreelancerLayoutPaymentsRouteImport } from './routes/_freelancer-layout/payments'
+import { Route as FreelancerLayoutProfileRouteImport } from './routes/_freelancer-layout/profile'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -43,6 +53,10 @@ const LayoutRoute = LayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FreelancerLayoutRoute = FreelancerLayoutRouteImport.update({
+  id: '/_freelancer-layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LayoutIndexRoute = LayoutIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -63,6 +77,51 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutWorklogsRoute = LayoutWorklogsRouteImport.update({
+  id: '/worklogs',
+  path: '/worklogs',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutPaymentHistoryRoute = LayoutPaymentHistoryRouteImport.update({
+  id: '/payment-history',
+  path: '/payment-history',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutPaymentReviewRoute = LayoutPaymentReviewRouteImport.update({
+  id: '/payment-review',
+  path: '/payment-review',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const FreelancerLoginRoute = FreelancerLoginRouteImport.update({
+  id: '/freelancer/login',
+  path: '/freelancer/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FreelancerRegisterRoute = FreelancerRegisterRouteImport.update({
+  id: '/freelancer/register',
+  path: '/freelancer/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FreelancerLayoutIndexRoute = FreelancerLayoutIndexRouteImport.update({
+  id: '/freelancer',
+  path: '/freelancer',
+  getParentRoute: () => FreelancerLayoutRoute,
+} as any)
+const FreelancerLayoutWorklogsRoute = FreelancerLayoutWorklogsRouteImport.update({
+  id: '/freelancer/worklogs',
+  path: '/freelancer/worklogs',
+  getParentRoute: () => FreelancerLayoutRoute,
+} as any)
+const FreelancerLayoutPaymentsRoute = FreelancerLayoutPaymentsRouteImport.update({
+  id: '/freelancer/payments',
+  path: '/freelancer/payments',
+  getParentRoute: () => FreelancerLayoutRoute,
+} as any)
+const FreelancerLayoutProfileRoute = FreelancerLayoutProfileRouteImport.update({
+  id: '/freelancer/profile',
+  path: '/freelancer/profile',
+  getParentRoute: () => FreelancerLayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
@@ -72,7 +131,16 @@ export interface FileRoutesByFullPath {
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/worklogs': typeof LayoutWorklogsRoute
+  '/payment-history': typeof LayoutPaymentHistoryRoute
+  '/payment-review': typeof LayoutPaymentReviewRoute
   '/': typeof LayoutIndexRoute
+  '/freelancer/login': typeof FreelancerLoginRoute
+  '/freelancer/register': typeof FreelancerRegisterRoute
+  '/freelancer': typeof FreelancerLayoutIndexRoute
+  '/freelancer/worklogs': typeof FreelancerLayoutWorklogsRoute
+  '/freelancer/payments': typeof FreelancerLayoutPaymentsRoute
+  '/freelancer/profile': typeof FreelancerLayoutProfileRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -82,11 +150,21 @@ export interface FileRoutesByTo {
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/worklogs': typeof LayoutWorklogsRoute
+  '/payment-history': typeof LayoutPaymentHistoryRoute
+  '/payment-review': typeof LayoutPaymentReviewRoute
   '/': typeof LayoutIndexRoute
+  '/freelancer/login': typeof FreelancerLoginRoute
+  '/freelancer/register': typeof FreelancerRegisterRoute
+  '/freelancer': typeof FreelancerLayoutIndexRoute
+  '/freelancer/worklogs': typeof FreelancerLayoutWorklogsRoute
+  '/freelancer/payments': typeof FreelancerLayoutPaymentsRoute
+  '/freelancer/profile': typeof FreelancerLayoutProfileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
+  '/_freelancer-layout': typeof FreelancerLayoutRouteWithChildren
   '/login': typeof LoginRoute
   '/recover-password': typeof RecoverPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -94,7 +172,16 @@ export interface FileRoutesById {
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/items': typeof LayoutItemsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/worklogs': typeof LayoutWorklogsRoute
+  '/_layout/payment-history': typeof LayoutPaymentHistoryRoute
+  '/_layout/payment-review': typeof LayoutPaymentReviewRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/freelancer/login': typeof FreelancerLoginRoute
+  '/freelancer/register': typeof FreelancerRegisterRoute
+  '/_freelancer-layout/freelancer': typeof FreelancerLayoutIndexRoute
+  '/_freelancer-layout/freelancer/worklogs': typeof FreelancerLayoutWorklogsRoute
+  '/_freelancer-layout/freelancer/payments': typeof FreelancerLayoutPaymentsRoute
+  '/_freelancer-layout/freelancer/profile': typeof FreelancerLayoutProfileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -106,7 +193,16 @@ export interface FileRouteTypes {
     | '/admin'
     | '/items'
     | '/settings'
+    | '/worklogs'
+    | '/payment-history'
+    | '/payment-review'
     | '/'
+    | '/freelancer/login'
+    | '/freelancer/register'
+    | '/freelancer'
+    | '/freelancer/worklogs'
+    | '/freelancer/payments'
+    | '/freelancer/profile'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -116,10 +212,20 @@ export interface FileRouteTypes {
     | '/admin'
     | '/items'
     | '/settings'
+    | '/worklogs'
+    | '/payment-history'
+    | '/payment-review'
     | '/'
+    | '/freelancer/login'
+    | '/freelancer/register'
+    | '/freelancer'
+    | '/freelancer/worklogs'
+    | '/freelancer/payments'
+    | '/freelancer/profile'
   id:
     | '__root__'
     | '/_layout'
+    | '/_freelancer-layout'
     | '/login'
     | '/recover-password'
     | '/reset-password'
@@ -127,15 +233,27 @@ export interface FileRouteTypes {
     | '/_layout/admin'
     | '/_layout/items'
     | '/_layout/settings'
+    | '/_layout/worklogs'
+    | '/_layout/payment-history'
+    | '/_layout/payment-review'
     | '/_layout/'
+    | '/freelancer/login'
+    | '/freelancer/register'
+    | '/_freelancer-layout/freelancer'
+    | '/_freelancer-layout/freelancer/worklogs'
+    | '/_freelancer-layout/freelancer/payments'
+    | '/_freelancer-layout/freelancer/profile'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   LayoutRoute: typeof LayoutRouteWithChildren
+  FreelancerLayoutRoute: typeof FreelancerLayoutRouteWithChildren
   LoginRoute: typeof LoginRoute
   RecoverPasswordRoute: typeof RecoverPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  FreelancerLoginRoute: typeof FreelancerLoginRoute
+  FreelancerRegisterRoute: typeof FreelancerRegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -175,6 +293,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_freelancer-layout': {
+      id: '/_freelancer-layout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof FreelancerLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_layout/': {
       id: '/_layout/'
       path: '/'
@@ -203,6 +328,69 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/worklogs': {
+      id: '/_layout/worklogs'
+      path: '/worklogs'
+      fullPath: '/worklogs'
+      preLoaderRoute: typeof LayoutWorklogsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/payment-history': {
+      id: '/_layout/payment-history'
+      path: '/payment-history'
+      fullPath: '/payment-history'
+      preLoaderRoute: typeof LayoutPaymentHistoryRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/payment-review': {
+      id: '/_layout/payment-review'
+      path: '/payment-review'
+      fullPath: '/payment-review'
+      preLoaderRoute: typeof LayoutPaymentReviewRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/freelancer/login': {
+      id: '/freelancer/login'
+      path: '/freelancer/login'
+      fullPath: '/freelancer/login'
+      preLoaderRoute: typeof FreelancerLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/freelancer/register': {
+      id: '/freelancer/register'
+      path: '/freelancer/register'
+      fullPath: '/freelancer/register'
+      preLoaderRoute: typeof FreelancerRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_freelancer-layout/freelancer': {
+      id: '/_freelancer-layout/freelancer'
+      path: '/freelancer'
+      fullPath: '/freelancer'
+      preLoaderRoute: typeof FreelancerLayoutIndexRouteImport
+      parentRoute: typeof FreelancerLayoutRoute
+    }
+    '/_freelancer-layout/freelancer/worklogs': {
+      id: '/_freelancer-layout/freelancer/worklogs'
+      path: '/freelancer/worklogs'
+      fullPath: '/freelancer/worklogs'
+      preLoaderRoute: typeof FreelancerLayoutWorklogsRouteImport
+      parentRoute: typeof FreelancerLayoutRoute
+    }
+    '/_freelancer-layout/freelancer/payments': {
+      id: '/_freelancer-layout/freelancer/payments'
+      path: '/freelancer/payments'
+      fullPath: '/freelancer/payments'
+      preLoaderRoute: typeof FreelancerLayoutPaymentsRouteImport
+      parentRoute: typeof FreelancerLayoutRoute
+    }
+    '/_freelancer-layout/freelancer/profile': {
+      id: '/_freelancer-layout/freelancer/profile'
+      path: '/freelancer/profile'
+      fullPath: '/freelancer/profile'
+      preLoaderRoute: typeof FreelancerLayoutProfileRouteImport
+      parentRoute: typeof FreelancerLayoutRoute
+    }
   }
 }
 
@@ -210,6 +398,9 @@ interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutWorklogsRoute: typeof LayoutWorklogsRoute
+  LayoutPaymentHistoryRoute: typeof LayoutPaymentHistoryRoute
+  LayoutPaymentReviewRoute: typeof LayoutPaymentReviewRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
@@ -217,18 +408,41 @@ const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutItemsRoute: LayoutItemsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutWorklogsRoute: LayoutWorklogsRoute,
+  LayoutPaymentHistoryRoute: LayoutPaymentHistoryRoute,
+  LayoutPaymentReviewRoute: LayoutPaymentReviewRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 
 const LayoutRouteWithChildren =
   LayoutRoute._addFileChildren(LayoutRouteChildren)
 
+interface FreelancerLayoutRouteChildren {
+  FreelancerLayoutIndexRoute: typeof FreelancerLayoutIndexRoute
+  FreelancerLayoutWorklogsRoute: typeof FreelancerLayoutWorklogsRoute
+  FreelancerLayoutPaymentsRoute: typeof FreelancerLayoutPaymentsRoute
+  FreelancerLayoutProfileRoute: typeof FreelancerLayoutProfileRoute
+}
+
+const FreelancerLayoutRouteChildren: FreelancerLayoutRouteChildren = {
+  FreelancerLayoutIndexRoute: FreelancerLayoutIndexRoute,
+  FreelancerLayoutWorklogsRoute: FreelancerLayoutWorklogsRoute,
+  FreelancerLayoutPaymentsRoute: FreelancerLayoutPaymentsRoute,
+  FreelancerLayoutProfileRoute: FreelancerLayoutProfileRoute,
+}
+
+const FreelancerLayoutRouteWithChildren =
+  FreelancerLayoutRoute._addFileChildren(FreelancerLayoutRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   LayoutRoute: LayoutRouteWithChildren,
+  FreelancerLayoutRoute: FreelancerLayoutRouteWithChildren,
   LoginRoute: LoginRoute,
   RecoverPasswordRoute: RecoverPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  FreelancerLoginRoute: FreelancerLoginRoute,
+  FreelancerRegisterRoute: FreelancerRegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -20,8 +20,18 @@ OpenAPI.TOKEN = async () => {
 
 const handleApiError = (error: Error) => {
   if (error instanceof ApiError && [401, 403].includes(error.status)) {
-    localStorage.removeItem("access_token")
-    window.location.href = "/login"
+    // Check if we're on a freelancer route
+    const isFreelancerRoute = window.location.pathname.startsWith("/freelancer")
+
+    if (isFreelancerRoute) {
+      // Clear freelancer token and redirect to freelancer login
+      localStorage.removeItem("freelancer_token")
+      window.location.href = "/freelancer/login"
+    } else {
+      // Clear admin token and redirect to admin login
+      localStorage.removeItem("access_token")
+      window.location.href = "/login"
+    }
   }
 }
 const queryClient = new QueryClient({
