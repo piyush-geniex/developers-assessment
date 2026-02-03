@@ -57,6 +57,26 @@ export const Body_login_login_access_tokenSchema = {
     title: 'Body_login-login_access_token'
 } as const;
 
+export const FreelancerCreateSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        email: {
+            type: 'string',
+            title: 'Email'
+        },
+        hourly_rate: {
+            type: 'number',
+            title: 'Hourly Rate'
+        }
+    },
+    type: 'object',
+    required: ['name', 'email', 'hourly_rate'],
+    title: 'FreelancerCreate'
+} as const;
+
 export const HTTPValidationErrorSchema = {
     properties: {
         detail: {
@@ -184,6 +204,25 @@ export const ItemsPublicSchema = {
     title: 'ItemsPublic'
 } as const;
 
+export const MarkPaidRequestSchema = {
+    properties: {
+        task_ids: {
+            items: {
+                type: 'integer'
+            },
+            type: 'array',
+            title: 'Task Ids'
+        },
+        payment_batch_id: {
+            type: 'string',
+            title: 'Payment Batch Id'
+        }
+    },
+    type: 'object',
+    required: ['task_ids', 'payment_batch_id'],
+    title: 'MarkPaidRequest'
+} as const;
+
 export const MessageSchema = {
     properties: {
         message: {
@@ -237,6 +276,64 @@ export const PrivateUserCreateSchema = {
     type: 'object',
     required: ['email', 'password', 'full_name'],
     title: 'PrivateUserCreate'
+} as const;
+
+export const TaskCreateSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['name'],
+    title: 'TaskCreate'
+} as const;
+
+export const TimeEntryCreateSchema = {
+    properties: {
+        freelancer_id: {
+            type: 'integer',
+            title: 'Freelancer Id'
+        },
+        task_id: {
+            type: 'integer',
+            title: 'Task Id'
+        },
+        hours: {
+            type: 'number',
+            title: 'Hours'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        logged_at: {
+            type: 'string',
+            title: 'Logged At'
+        }
+    },
+    type: 'object',
+    required: ['freelancer_id', 'task_id', 'hours', 'logged_at'],
+    title: 'TimeEntryCreate'
 } as const;
 
 export const TokenSchema = {

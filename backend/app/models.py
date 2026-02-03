@@ -111,3 +111,34 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class Freelancer(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    name: str = Field(max_length=255)
+    email: str = Field(unique=True, index=True, max_length=255)
+    hourly_rate: float
+    created_at: str = Field(index=True)
+    updated_at: str
+
+
+class Task(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    name: str = Field(max_length=255)
+    description: str | None = Field(default=None)
+    created_at: str = Field(index=True)
+    updated_at: str
+
+
+class TimeEntry(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    freelancer_id: int = Field(foreign_key="freelancer.id", index=True)
+    task_id: int = Field(foreign_key="task.id", index=True)
+    hours: float
+    description: str | None = Field(default=None)
+    logged_at: str = Field(index=True)
+    created_at: str = Field(index=True)
+    updated_at: str
+    payment_status: str = Field(default="unpaid", index=True)
+    paid_at: str | None = Field(default=None)
+    payment_batch_id: str | None = Field(default=None, index=True)
