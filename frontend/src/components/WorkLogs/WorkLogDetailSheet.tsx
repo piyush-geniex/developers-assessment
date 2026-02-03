@@ -324,12 +324,12 @@ export default function WorkLogDetailSheet({
                       Time Entries
                     </span>
                     <Badge variant="secondary">
-                      {worklog.time_entries.length} entries
+                      {worklog.time_entries?.length ?? 0} entries
                     </Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {worklog.time_entries.length === 0 ? (
+                  {!worklog.time_entries || worklog.time_entries.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                       <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p>No time entries recorded</p>

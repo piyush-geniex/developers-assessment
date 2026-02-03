@@ -199,8 +199,13 @@ class WorkLogService:
         if not worklog:
             raise HTTPException(status_code=404, detail="WorkLog not found")
 
-        # Get freelancer
+        # Get freelancer (with null check for data integrity)
         freelancer = session.get(Freelancer, worklog.freelancer_id)
+        if not freelancer:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Freelancer not found for worklog {worklog_id}"
+            )
 
         # Get time entries
         time_entries = session.exec(

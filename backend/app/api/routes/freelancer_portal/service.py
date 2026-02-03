@@ -448,6 +448,9 @@ class FreelancerPortalService:
 
         worklog = session.get(WorkLog, entry.work_log_id)
 
+        if not worklog:
+            raise HTTPException(status_code=404, detail="WorkLog not found for this time entry")
+
         if worklog.freelancer_id != freelancer.id:
             raise HTTPException(
                 status_code=403, detail="You don't have access to this time entry"
@@ -494,6 +497,9 @@ class FreelancerPortalService:
             raise HTTPException(status_code=404, detail="Time entry not found")
 
         worklog = session.get(WorkLog, entry.work_log_id)
+
+        if not worklog:
+            raise HTTPException(status_code=404, detail="WorkLog not found for this time entry")
 
         if worklog.freelancer_id != freelancer.id:
             raise HTTPException(
