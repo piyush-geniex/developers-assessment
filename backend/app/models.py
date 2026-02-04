@@ -1,4 +1,5 @@
 import uuid
+from datetime import date, datetime
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -111,3 +112,138 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+# WorkLog models
+class WorkLogBase(SQLModel):
+    task_name: str = Field(max_length=255)
+    total_hours: float = Field(default=0.0)
+    hourly_rate: float = Field(default=0.0)
+    total_amount: float = Field(default=0.0)
+    status: str = Field(default="PENDING", max_length=50)
+
+
+class WorkLogCreate(SQLModel):
+    task_name: str = Field(min_length=1, max_length=255)
+    freelancer_id: uuid.UUID
+    hourly_rate: float = Field(gt=0)
+
+
+class WorkLogUpdate(SQLModel):
+    task_name: str | None = Field(default=None, max_length=255)
+    hourly_rate: float | None = Field(default=None, gt=0)
+    status: str | None = Field(default=None, max_length=50)
+
+
+class WorkLog(WorkLogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    freelancer_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    freelancer: User | None = Relationship()
+    time_entries: list["TimeEntry"] = Relationship(back_populates="worklog", cascade_delete=True)
+
+
+class WorkLogPublic(WorkLogBase):
+    id: uuid.UUID
+    freelancer_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class WorkLogsPublic(SQLModel):
+    data: list[WorkLogPublic]
+    count: int
+
+
+# TimeEntry models
+class TimeEntryBase(SQLModel):
+    description: str = Field(max_length=500)
+    hours: float = Field(gt=0)
+    date: date
+
+
+class TimeEntryCreate(TimeEntryBase):
+    worklog_id: uuid.UUID
+
+
+class TimeEntryUpdate(SQLModel):
+    description: str | None = Field(default=None, max_length=500)
+    hours: float | None = Field(default=None, gt=0)
+    date: date | None = None
+
+
+class TimeEntry(TimeEntryBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False, ondelete="CASCADE")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    worklog: WorkLog | None = Relationship(back_populates="time_entries")
+
+
+class TimeEntryPublic(TimeEntryBase):
+    id: uuid.UUID
+    worklog_id: uuid.UUID
+    created_at: datetime
+
+
+class TimeEntriesPublic(SQLModel):
+    data: list[TimeEntryPublic]
+    count: int
+
+
+# Payment models
+class PaymentBase(SQLModel):
+    batch_name: str = Field(max_length=255)
+    date_from: date
+    date_to: date
+    total_amount: float = Field(default=0.0)
+    status: str = Field(default="DRAFT", max_length=50)
+
+
+class PaymentCreate(SQLModel):
+    batch_name: str = Field(min_length=1, max_length=255)
+    date_from: date
+    date_to: date
+    worklog_ids: list[uuid.UUID]
+
+
+class PaymentUpdate(SQLModel):
+    batch_name: str | None = Field(default=None, max_length=255)
+    status: str | None = Field(default=None, max_length=50)
+
+
+class Payment(PaymentBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_by_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    created_by: User | None = Relationship()
+    payment_worklogs: list["PaymentWorkLog"] = Relationship(back_populates="payment", cascade_delete=True)
+
+
+class PaymentPublic(PaymentBase):
+    id: uuid.UUID
+    created_by_id: uuid.UUID
+    created_at: datetime
+
+
+class PaymentsPublic(SQLModel):
+    data: list[PaymentPublic]
+    count: int
+
+
+# PaymentWorkLog models (junction table)
+class PaymentWorkLogBase(SQLModel):
+    amount: float
+
+
+class PaymentWorkLog(PaymentWorkLogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    payment_id: uuid.UUID = Field(foreign_key="payment.id", nullable=False, ondelete="CASCADE")
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+    payment: Payment | None = Relationship(back_populates="payment_worklogs")
+
+
+class PaymentWorkLogPublic(PaymentWorkLogBase):
+    id: uuid.UUID
+    payment_id: uuid.UUID
+    worklog_id: uuid.UUID
