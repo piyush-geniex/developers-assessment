@@ -15,9 +15,6 @@ export const Route = createFileRoute("/_layout/freelancers")({
 })
 
 function Freelancers() {
-  const handleSuccess = () => {
-    window.location.reload()
-  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,7 +23,7 @@ function Freelancers() {
           <h1 className="text-2xl font-bold tracking-tight">Freelancers</h1>
           <p className="text-muted-foreground">Manage freelancers and their rates</p>
         </div>
-        <AddFreelancer onSuccess={handleSuccess} />
+        <AddFreelancer />
       </div>
       <FreelancerList />
     </div>

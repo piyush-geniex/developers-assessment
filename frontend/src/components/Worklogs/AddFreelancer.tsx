@@ -45,11 +45,8 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-interface AddFreelancerProps {
-  onSuccess?: () => void
-}
 
-const AddFreelancer = ({ onSuccess }: AddFreelancerProps) => {
+const AddFreelancer = () => {
   const [isOpen, setIsOpen] = useState(false)
   const queryClient = useQueryClient()
   const { showSuccessToast, showErrorToast } = useCustomToast()
@@ -90,9 +87,6 @@ const AddFreelancer = ({ onSuccess }: AddFreelancerProps) => {
       showSuccessToast("Freelancer created successfully")
       form.reset()
       setIsOpen(false)
-      if (onSuccess) {
-        onSuccess()
-      }
     },
     onError: handleError.bind(showErrorToast),
     onSettled: () => {
