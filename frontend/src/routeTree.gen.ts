@@ -217,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutWorklogsRouteImport
       parentRoute: typeof LayoutRoute
     },
+    '/_layout/freelancers': {
+      id: '/_layout/freelancers'
+      path: '/freelancers'
+      fullPath: '/freelancers'
+      preLoaderRoute: typeof LayoutFreelancersRouteImport
+      parentRoute: typeof LayoutRoute
+    },
   }
 }
 
