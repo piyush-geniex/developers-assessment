@@ -125,8 +125,7 @@ class FreelancerBase(SQLModel):
 
 # Properties to receive via API on creation
 class FreelancerCreate(FreelancerBase):
-    user_id: uuid.UUID
-
+    pass
 
 # Properties to receive via API on update
 class FreelancerUpdate(SQLModel):
@@ -138,14 +137,12 @@ class FreelancerUpdate(SQLModel):
 # Database model
 class Freelancer(FreelancerBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
 
 
 # Properties to return via API
 class FreelancerPublic(FreelancerBase):
     id: uuid.UUID
-    user_id: uuid.UUID
     created_at: datetime
 
 
@@ -156,20 +153,19 @@ class FreelancersPublic(SQLModel):
 
 # WorkLog Base
 class WorkLogBase(SQLModel):
-    task_name: str = Field(max_length=255)
-    task_description: str | None = Field(default=None)
+    hours: float = Field(default=0.0)
     payment_status: str = Field(default="UNPAID", max_length=50)
 
 
 # Properties to receive via API on creation
 class WorkLogCreate(WorkLogBase):
     freelancer_id: uuid.UUID
+    item_id: uuid.UUID
 
 
 # Properties to receive via API on update
 class WorkLogUpdate(SQLModel):
-    task_name: str | None = Field(default=None, max_length=255)
-    task_description: str | None = Field(default=None)
+    hours: float | None = Field(default=None)
     payment_status: str | None = Field(default=None, max_length=50)
 
 
@@ -177,6 +173,7 @@ class WorkLogUpdate(SQLModel):
 class WorkLog(WorkLogBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     freelancer_id: uuid.UUID = Field(foreign_key="freelancer.id", index=True)
+    item_id: uuid.UUID = Field(foreign_key="item.id", index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     paid_at: datetime | None = Field(default=None, index=True)
 
@@ -185,6 +182,8 @@ class WorkLog(WorkLogBase, table=True):
 class WorkLogPublic(WorkLogBase):
     id: uuid.UUID
     freelancer_id: uuid.UUID
+    item_id: uuid.UUID
+    item_title: str
     created_at: datetime
     paid_at: datetime | None
 

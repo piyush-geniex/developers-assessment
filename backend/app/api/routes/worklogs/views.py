@@ -22,6 +22,7 @@ from app.models import (
     FreelancerPublic,
     FreelancersPublic,
     FreelancerUpdate,
+    Item,
     Message,
     TimeSegment,
     TimeSegmentCreate,
@@ -119,14 +120,28 @@ def create_worklog(
     """Create new worklog"""
     wl_in = WorkLogCreate(
         freelancer_id=req.freelancer_id,
-        task_name=req.task_name,
-        task_description=req.task_description,
+        item_id=req.item_id,
+        hours=req.hours,
     )
     wl = WorkLog.model_validate(wl_in)
     session.add(wl)
     session.commit()
     session.refresh(wl)
-    return wl
+    
+    # Fetch item_title from Item table
+    itm = session.get(Item, wl.item_id)
+    itm_title = itm.title if itm else ""
+    
+    return WorkLogPublic(
+        id=wl.id,
+        freelancer_id=wl.freelancer_id,
+        item_id=wl.item_id,
+        item_title=itm_title,
+        hours=wl.hours,
+        payment_status=wl.payment_status,
+        created_at=wl.created_at,
+        paid_at=wl.paid_at,
+    )
 
 
 @router.get("/", response_model=list[WorkLogWithEarnings])
@@ -154,20 +169,23 @@ def list_worklogs(
             if not fr:
                 continue
 
-            ttl_hrs = WorkLogService.calc_ttl_hrs(session, wl.id)
-            amt = WorkLogService.calc_wl_amt(session, wl.id)
+            # Fetch item_title from Item table
+            itm = session.get(Item, wl.item_id)
+            itm_title = itm.title if itm else ""
+
+            amt = wl.hours * fr.hourly_rate
 
             res.append(
                 WorkLogWithEarnings(
                     id=wl.id,
-                    task_name=wl.task_name,
-                    task_description=wl.task_description,
+                    item_id=wl.item_id,
+                    item_title=itm_title,
+                    hours=wl.hours,
                     payment_status=wl.payment_status,
                     freelancer_id=wl.freelancer_id,
                     freelancer_name=fr.full_name,
                     created_at=wl.created_at,
                     paid_at=wl.paid_at,
-                    total_hours=ttl_hrs,
                     amount_earned=amt,
                 )
             )
@@ -192,6 +210,10 @@ def get_worklog(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -
     if not fr:
         raise HTTPException(status_code=404, detail="Freelancer not found")
 
+    # Fetch item_title from Item table
+    itm = session.get(Item, wl.item_id)
+    itm_title = itm.title if itm else ""
+
     segs = session.exec(select(TimeSegment).where(TimeSegment.worklog_id == id)).all()
 
     seg_list = []
@@ -205,13 +227,13 @@ def get_worklog(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -
             }
         )
 
-    ttl_hrs = sum(s.hours for s in segs)
-    amt = ttl_hrs * fr.hourly_rate
+    amt = wl.hours * fr.hourly_rate
 
     return WorkLogDetail(
         id=wl.id,
-        task_name=wl.task_name,
-        task_description=wl.task_description,
+        item_id=wl.item_id,
+        item_title=itm_title,
+        hours=wl.hours,
         payment_status=wl.payment_status,
         freelancer_id=wl.freelancer_id,
         freelancer_name=fr.full_name,
@@ -219,7 +241,6 @@ def get_worklog(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -
         created_at=wl.created_at,
         paid_at=wl.paid_at,
         time_segments=seg_list,
-        total_hours=ttl_hrs,
         amount_earned=amt,
     )
 
@@ -241,7 +262,21 @@ def update_worklog(
     session.add(wl)
     session.commit()
     session.refresh(wl)
-    return wl
+    
+    # Fetch item_title from Item table
+    itm = session.get(Item, wl.item_id)
+    itm_title = itm.title if itm else ""
+    
+    return WorkLogPublic(
+        id=wl.id,
+        freelancer_id=wl.freelancer_id,
+        item_id=wl.item_id,
+        item_title=itm_title,
+        hours=wl.hours,
+        payment_status=wl.payment_status,
+        created_at=wl.created_at,
+        paid_at=wl.paid_at,
+    )
 
 
 @router.delete("/{id}", response_model=WorkLogPublic)
@@ -356,20 +391,23 @@ def get_payment_eligible_worklogs(
             if not fr:
                 continue
 
-            ttl_hrs = WorkLogService.calc_ttl_hrs(session, wl.id)
-            amt = WorkLogService.calc_wl_amt(session, wl.id)
+            # Fetch item_title from Item table
+            itm = session.get(Item, wl.item_id)
+            itm_title = itm.title if itm else ""
+
+            amt = wl.hours * fr.hourly_rate
 
             res.append(
                 WorkLogWithEarnings(
                     id=wl.id,
-                    task_name=wl.task_name,
-                    task_description=wl.task_description,
+                    item_id=wl.item_id,
+                    item_title=itm_title,
+                    hours=wl.hours,
                     payment_status=wl.payment_status,
                     freelancer_id=wl.freelancer_id,
                     freelancer_name=fr.full_name,
                     created_at=wl.created_at,
                     paid_at=wl.paid_at,
-                    total_hours=ttl_hrs,
                     amount_earned=amt,
                 )
             )

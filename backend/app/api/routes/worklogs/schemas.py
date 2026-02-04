@@ -14,14 +14,14 @@ class WorkLogWithEarnings(BaseModel):
     """
 
     id: uuid.UUID
-    task_name: str
-    task_description: str | None
+    item_id: uuid.UUID
+    item_title: str
+    hours: float
     payment_status: str
     freelancer_id: uuid.UUID
     freelancer_name: str
     created_at: datetime
     paid_at: datetime | None
-    total_hours: float
     amount_earned: float
 
 
@@ -32,8 +32,9 @@ class WorkLogDetail(BaseModel):
     """
 
     id: uuid.UUID
-    task_name: str
-    task_description: str | None
+    item_id: uuid.UUID
+    item_title: str
+    hours: float
     payment_status: str
     freelancer_id: uuid.UUID
     freelancer_name: str
@@ -41,7 +42,6 @@ class WorkLogDetail(BaseModel):
     created_at: datetime
     paid_at: datetime | None
     time_segments: list[dict]
-    total_hours: float
     amount_earned: float
 
 
@@ -128,27 +128,45 @@ class WorkLogCreateRequest(BaseModel):
     """Request to create worklog"""
 
     freelancer_id: uuid.UUID
-    task_name: str
-    task_description: str | None = None
+    item_id: uuid.UUID
+    item_title: str
+    hours: float
 
-    @field_validator("task_name")
+    @field_validator("item_title")
     @classmethod
-    def validate_task_name(cls, value: str) -> str:
+    def validate_item_title(cls, value: str) -> str:
         if value is None:
-            raise ValueError("task_name is required")
+            raise ValueError("item_title is required")
 
         if not isinstance(value, str):
-            raise ValueError("task_name must be a string")
+            raise ValueError("item_title must be a string")
 
         value = value.strip()
 
         if len(value) == 0:
-            raise ValueError("task_name cannot be empty")
+            raise ValueError("item_title cannot be empty")
 
         if len(value) > 255:
-            raise ValueError("task_name too long")
+            raise ValueError("item_title too long")
 
         return value
+
+    @field_validator("hours")
+    @classmethod
+    def validate_hours(cls, value: float) -> float:
+        if value is None:
+            raise ValueError("hours is required")
+
+        if not isinstance(value, (int, float)):
+            raise ValueError("hours must be a number")
+
+        if value < 0:
+            raise ValueError("hours cannot be negative")
+
+        if value > 24:
+            raise ValueError("hours cannot exceed 24")
+
+        return float(value)
 
 
 class TimeSegmentCreateRequest(BaseModel):
