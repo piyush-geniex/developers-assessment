@@ -98,6 +98,12 @@ export default function PaymentBatch() {
     setSelectedIds(newSelected)
   }
 
+  const handleClearFilters = () => {
+    setStartDate("")
+    setEndDate("")
+    refetch()
+  }
+
   const handleProcessPayment = () => {
     mutation.mutate(Array.from(selectedIds))
   }
@@ -134,6 +140,9 @@ export default function PaymentBatch() {
         </div>
         <div className="flex items-end">
           <Button onClick={() => refetch()}>Filter</Button>
+        </div>
+        <div className="flex items-end">
+          <Button onClick={() => handleClearFilters()}>Clear Filters</Button>
         </div>
       </div>
 
