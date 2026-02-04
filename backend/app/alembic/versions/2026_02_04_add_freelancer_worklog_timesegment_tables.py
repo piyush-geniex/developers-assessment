@@ -24,13 +24,10 @@ def upgrade():
         sa.Column('hourly_rate', sa.Float(), nullable=False),
         sa.Column('status', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('user_id', sa.UUID(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_freelancer_created_at'), 'freelancer', ['created_at'], unique=False)
-    op.create_index(op.f('ix_freelancer_user_id'), 'freelancer', ['user_id'], unique=False)
 
     # Create worklog table
     op.create_table('worklog',
@@ -71,6 +68,5 @@ def downgrade():
     op.drop_index(op.f('ix_worklog_created_at'), table_name='worklog')
     op.drop_table('worklog')
     
-    op.drop_index(op.f('ix_freelancer_user_id'), table_name='freelancer')
     op.drop_index(op.f('ix_freelancer_created_at'), table_name='freelancer')
     op.drop_table('freelancer')

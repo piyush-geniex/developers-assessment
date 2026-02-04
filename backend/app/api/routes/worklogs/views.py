@@ -45,7 +45,6 @@ def create_freelancer(
 ) -> Any:
     """Create new freelancer"""
     fr_in = FreelancerCreate(
-        user_id=req.user_id,
         full_name=req.full_name,
         hourly_rate=req.hourly_rate,
         status=req.status,

@@ -70,7 +70,6 @@ class PaymentBatchRequest(BaseModel):
 class FreelancerCreateRequest(BaseModel):
     """Request to create freelancer"""
 
-    user_id: uuid.UUID
     full_name: str
     hourly_rate: float
     status: str = "active"

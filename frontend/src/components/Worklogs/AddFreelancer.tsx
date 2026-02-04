@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import axios from "axios"
@@ -33,9 +34,10 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
 
 const formSchema = z.object({
-  user_id: z.string().min(1, { message: "User is required" }),
   full_name: z.string().min(1, { message: "Full name is required" }),
   hourly_rate: z.string().min(1, { message: "Hourly rate is required" }),
   status: z.enum(["active", "inactive"]),
@@ -49,55 +51,28 @@ interface AddFreelancerProps {
 
 const AddFreelancer = ({ onSuccess }: AddFreelancerProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [users, setUsers] = useState<any[]>([])
-  const [loadingUsers, setLoadingUsers] = useState(false)
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
     criteriaMode: "all",
     defaultValues: {
-      user_id: "",
       full_name: "",
       hourly_rate: "",
       status: "active",
     },
   })
 
-  useEffect(() => {
-    if (isOpen) {
+  const mutation = useMutation({
+    mutationFn: async (data: FormData) => {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
       const token = localStorage.getItem("access_token")
 
-      setLoadingUsers(true)
-      axios
-        .get(`${apiUrl}/api/v1/users/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setUsers(response.data.data || [])
-          setLoadingUsers(false)
-        })
-        .catch((err) => {
-          console.error("Failed to load users:", err)
-          setLoadingUsers(false)
-        })
-    }
-  }, [isOpen])
-
-  const onSubmit = async (data: FormData) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
-    const token = localStorage.getItem("access_token")
-
-    setLoading(true)
-    try {
-      await axios.post(
+      const response = await axios.post(
         `${apiUrl}/api/v1/worklogs/freelancers`,
         {
-          user_id: data.user_id,
           full_name: data.full_name,
           hourly_rate: parseFloat(data.hourly_rate),
           status: data.status,
@@ -109,19 +84,24 @@ const AddFreelancer = ({ onSuccess }: AddFreelancerProps) => {
           },
         }
       )
-      alert("Freelancer created successfully")
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast("Freelancer created successfully")
       form.reset()
       setIsOpen(false)
       if (onSuccess) {
         onSuccess()
       }
-    } catch (error: any) {
-      console.error("Failed to create freelancer:", error)
-      const errorMessage = error.response?.data?.detail || "Failed to create freelancer. Please try again."
-      alert(errorMessage)
-    } finally {
-      setLoading(false)
-    }
+    },
+    onError: handleError.bind(showErrorToast),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["freelancers"] })
+    },
+  })
+
+  const onSubmit = (data: FormData) => {
+    mutation.mutate(data)
   }
 
   return (
@@ -142,37 +122,6 @@ const AddFreelancer = ({ onSuccess }: AddFreelancerProps) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid gap-4 py-4">
-              <FormField
-                control={form.control}
-                name="user_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      User <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={loadingUsers}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a user" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {users.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {user.email} {user.full_name && `(${user.full_name})`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <FormField
                 control={form.control}
                 name="full_name"
@@ -247,11 +196,11 @@ const AddFreelancer = ({ onSuccess }: AddFreelancerProps) => {
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline" disabled={loading}>
+                <Button variant="outline" disabled={mutation.isPending}>
                   Cancel
                 </Button>
               </DialogClose>
-              <LoadingButton type="submit" loading={loading}>
+              <LoadingButton type="submit" loading={mutation.isPending}>
                 Save
               </LoadingButton>
             </DialogFooter>
