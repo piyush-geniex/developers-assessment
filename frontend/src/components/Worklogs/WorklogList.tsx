@@ -1,5 +1,6 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 import { Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,40 +14,31 @@ import {
 } from "@/components/ui/table"
 
 export default function WorklogList() {
-  const [worklogs, setWorklogs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const pageSize = 10
 
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
-    const token = localStorage.getItem("access_token")
-
-    setLoading(true)
-    axios
-      .get(`${apiUrl}/api/v1/worklogs/`, {
+  const { data, isLoading: loading, isError } = useQuery({
+    queryKey: ["worklogs"],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const token = localStorage.getItem("access_token")
+      const response = await axios.get(`${apiUrl}/api/v1/worklogs/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {
-        setWorklogs(response.data || [])
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError("Failed to load worklogs")
-        setLoading(false)
-        console.error(err)
-      })
-  }, [])
+      return response.data
+    },
+  })
+
+  const worklogs = data || []
 
   if (loading) {
     return <div className="text-center py-12">Loading worklogs...</div>
   }
 
-  if (error) {
-    return <div className="text-center py-12 text-red-500">{error}</div>
+  if (isError) {
+    return <div className="text-center py-12 text-red-500">Failed to load worklogs</div>
   }
 
   if (worklogs.length === 0) {
@@ -80,9 +72,9 @@ export default function WorklogList() {
         <TableBody>
           {displayed.map((wl: any) => (
             <TableRow key={wl.id}>
-              <TableCell className="font-medium">{wl.task_name}</TableCell>
+              <TableCell className="font-medium">{wl.item_title}</TableCell>
               <TableCell>{wl.freelancer_name}</TableCell>
-              <TableCell>{wl.total_hours}</TableCell>
+              <TableCell>{wl.hours}</TableCell>
               <TableCell>${wl.amount_earned.toFixed(2)}</TableCell>
               <TableCell>
                 <span

@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import axios from "axios"
@@ -33,24 +34,21 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
 
 const formSchema = z.object({
   freelancer_id: z.string().min(1, { message: "Freelancer is required" }),
-  task_name: z.string().min(1, { message: "Task name is required" }),
-  task_description: z.string().optional(),
+  item_id: z.string().min(1, { message: "Item is required" }),
+  hours: z.string().min(1, { message: "Hours is required" }),
 })
 
 type FormData = z.infer<typeof formSchema>
 
-interface AddWorklogProps {
-  onSuccess?: () => void
-}
-
-const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
+const AddWorklog = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [freelancers, setFreelancers] = useState<any[]>([])
-  const [loadingFreelancers, setLoadingFreelancers] = useState(false)
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -58,43 +56,60 @@ const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
     criteriaMode: "all",
     defaultValues: {
       freelancer_id: "",
-      task_name: "",
-      task_description: "",
+      item_id: "",
+      hours: "",
     },
   })
 
-  useEffect(() => {
-    if (isOpen) {
+  const { data: freelancersData, isLoading: loadingFreelancers } = useQuery({
+    queryKey: ["freelancers"],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const token = localStorage.getItem("access_token")
+      const response = await axios.get(`${apiUrl}/api/v1/worklogs/freelancers`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return response.data
+    },
+    enabled: isOpen,
+  })
+
+  const { data: itemsData, isLoading: loadingItems } = useQuery({
+    queryKey: ["items"],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const token = localStorage.getItem("access_token")
+      const response = await axios.get(`${apiUrl}/api/v1/items/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return response.data
+    },
+    enabled: isOpen,
+  })
+
+  const freelancers = freelancersData?.data || []
+  const items = itemsData?.data || []
+
+  const mutation = useMutation({
+    mutationFn: async (data: FormData) => {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
       const token = localStorage.getItem("access_token")
 
-      setLoadingFreelancers(true)
-      axios
-        .get(`${apiUrl}/api/v1/worklogs/freelancers`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setFreelancers(response.data.data || [])
-          setLoadingFreelancers(false)
-        })
-        .catch((err) => {
-          console.error("Failed to load freelancers:", err)
-          setLoadingFreelancers(false)
-        })
-    }
-  }, [isOpen])
+      const selectedItem = items.find((itm: any) => itm.id === data.item_id)
+      const itemTitle = selectedItem?.title || ""
 
-  const onSubmit = async (data: FormData) => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
-    const token = localStorage.getItem("access_token")
-
-    setLoading(true)
-    try {
-      await axios.post(
+      const response = await axios.post(
         `${apiUrl}/api/v1/worklogs/`,
-        data,
+        {
+          freelancer_id: data.freelancer_id,
+          item_id: data.item_id,
+          item_title: itemTitle,
+          hours: parseFloat(data.hours),
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,19 +117,21 @@ const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
           },
         }
       )
-      alert("Worklog created successfully")
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast("Worklog created successfully")
       form.reset()
       setIsOpen(false)
-      if (onSuccess) {
-        onSuccess()
-      }
-    } catch (error: any) {
-      console.error("Failed to create worklog:", error)
-      const errorMessage = error.response?.data?.detail || "Failed to create worklog. Please try again."
-      alert(errorMessage)
-    } finally {
-      setLoading(false)
-    }
+    },
+    onError: handleError.bind(showErrorToast),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["worklogs"] })
+    },
+  })
+
+  const onSubmit = (data: FormData) => {
+    mutation.mutate(data)
   }
 
   return (
@@ -154,7 +171,7 @@ const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {freelancers.map((freelancer) => (
+                        {freelancers.map((freelancer: any) => (
                           <SelectItem key={freelancer.id} value={freelancer.id}>
                             {freelancer.full_name} (${freelancer.hourly_rate}/hr)
                           </SelectItem>
@@ -168,20 +185,30 @@ const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
 
               <FormField
                 control={form.control}
-                name="task_name"
+                name="item_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Task Name <span className="text-destructive">*</span>
+                      Item <span className="text-destructive">*</span>
                     </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g. Frontend Development"
-                        type="text"
-                        {...field}
-                        required
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={loadingItems}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an item" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {items.map((item: any) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -189,15 +216,21 @@ const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
 
               <FormField
                 control={form.control}
-                name="task_description"
+                name="hours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Task Description</FormLabel>
+                    <FormLabel>
+                      Hours <span className="text-destructive">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Optional description"
-                        type="text"
+                        placeholder="8.5"
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="24"
                         {...field}
+                        required
                       />
                     </FormControl>
                     <FormMessage />
@@ -208,11 +241,11 @@ const AddWorklog = ({ onSuccess }: AddWorklogProps) => {
 
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline" disabled={loading}>
+                <Button variant="outline" disabled={mutation.isPending}>
                   Cancel
                 </Button>
               </DialogClose>
-              <LoadingButton type="submit" loading={loading}>
+              <LoadingButton type="submit" loading={mutation.isPending}>
                 Save
               </LoadingButton>
             </DialogFooter>

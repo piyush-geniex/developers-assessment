@@ -15,10 +15,6 @@ export const Route = createFileRoute("/_layout/worklogs")({
 })
 
 function Worklogs() {
-  const handleSuccess = () => {
-    window.location.reload()
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -26,7 +22,7 @@ function Worklogs() {
           <h1 className="text-2xl font-bold tracking-tight">Worklogs</h1>
           <p className="text-muted-foreground">View all worklogs and earnings</p>
         </div>
-        <AddWorklog onSuccess={handleSuccess} />
+        <AddWorklog />
       </div>
       <WorklogList />
     </div>

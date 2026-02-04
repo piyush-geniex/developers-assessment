@@ -1,5 +1,5 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { Search } from "lucide-react"
 
 import {
@@ -12,38 +12,28 @@ import {
 } from "@/components/ui/table"
 
 export default function FreelancerList() {
-  const [freelancers, setFreelancers] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
-    const token = localStorage.getItem("access_token")
-
-    setLoading(true)
-    axios
-      .get(`${apiUrl}/api/v1/worklogs/freelancers`, {
+  const { data, isLoading: loading, isError } = useQuery({
+    queryKey: ["freelancers"],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const token = localStorage.getItem("access_token")
+      const response = await axios.get(`${apiUrl}/api/v1/worklogs/freelancers`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      .then((response) => {
-        setFreelancers(response.data.data || [])
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError("Failed to load freelancers")
-        setLoading(false)
-        console.error(err)
-      })
-  }, [])
+      return response.data
+    },
+  })
+
+  const freelancers = data?.data || []
 
   if (loading) {
     return <div className="text-center py-12">Loading freelancers...</div>
   }
 
-  if (error) {
-    return <div className="text-center py-12 text-red-500">{error}</div>
+  if (isError) {
+    return <div className="text-center py-12 text-red-500">Failed to load freelancers</div>
   }
 
   if (freelancers.length === 0) {

@@ -1,5 +1,6 @@
 import axios from "axios"
-import { useEffect, useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useState } from "react"
 import { Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -13,45 +14,69 @@ import {
 } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
+import useCustomToast from "@/hooks/useCustomToast"
+import { handleError } from "@/utils"
 
 export default function PaymentBatch() {
-  const [worklogs, setWorklogs] = useState<any[]>([])
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
-  const [processing, setProcessing] = useState(false)
+  const queryClient = useQueryClient()
+  const { showSuccessToast, showErrorToast } = useCustomToast()
 
-  const fetchWorklogs = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
-    const token = localStorage.getItem("access_token")
+  const { data, isLoading: loading, isError, refetch } = useQuery({
+    queryKey: ["payment-eligible-worklogs", startDate, endDate],
+    queryFn: async () => {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const token = localStorage.getItem("access_token")
 
-    const params = new URLSearchParams()
-    if (startDate) params.append("start_date", startDate)
-    if (endDate) params.append("end_date", endDate)
+      const params = new URLSearchParams()
+      if (startDate) params.append("start_date", startDate)
+      if (endDate) params.append("end_date", endDate)
 
-    setLoading(true)
-    axios
-      .get(`${apiUrl}/api/v1/worklogs/payment-eligible/list?${params.toString()}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await axios.get(
+        `${apiUrl}/api/v1/worklogs/payment-eligible/list?${params.toString()}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      return response.data
+    },
+  })
+
+  const worklogs = data || []
+
+  const mutation = useMutation({
+    mutationFn: async (worklogIds: string[]) => {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
+      const token = localStorage.getItem("access_token")
+
+      const response = await axios.post(
+        `${apiUrl}/api/v1/worklogs/process-payment`,
+        {
+          worklog_ids: worklogIds,
         },
-      })
-      .then((response) => {
-        setWorklogs(response.data || [])
-        setLoading(false)
-      })
-      .catch((err) => {
-        setError("Failed to load payment-eligible worklogs")
-        setLoading(false)
-        console.error(err)
-      })
-  }
-
-  useEffect(() => {
-    fetchWorklogs()
-  }, [])
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+      return response.data
+    },
+    onSuccess: () => {
+      showSuccessToast("Payment processed successfully!")
+      setSelectedIds(new Set())
+    },
+    onError: handleError.bind(showErrorToast),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["payment-eligible-worklogs"] })
+      queryClient.invalidateQueries({ queryKey: ["worklogs"] })
+    },
+  })
 
   const handleSelect = (id: string) => {
     const newSelected = new Set(selectedIds)
@@ -65,7 +90,7 @@ export default function PaymentBatch() {
 
   const handleExcludeFreelancer = (freelancerId: string) => {
     const newSelected = new Set(selectedIds)
-    worklogs.forEach((wl) => {
+    worklogs.forEach((wl: any) => {
       if (wl.freelancer_id === freelancerId) {
         newSelected.delete(wl.id)
       }
@@ -74,46 +99,19 @@ export default function PaymentBatch() {
   }
 
   const handleProcessPayment = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000"
-    const token = localStorage.getItem("access_token")
-
-    setProcessing(true)
-    axios
-      .post(
-        `${apiUrl}/api/v1/worklogs/process-payment`,
-        {
-          worklog_ids: Array.from(selectedIds),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then(() => {
-        alert("Payment processed successfully!")
-        setSelectedIds(new Set())
-        fetchWorklogs()
-        setProcessing(false)
-      })
-      .catch((err) => {
-        alert("Failed to process payment")
-        setProcessing(false)
-        console.error(err)
-      })
+    mutation.mutate(Array.from(selectedIds))
   }
 
   if (loading) {
     return <div className="text-center py-12">Loading payment-eligible worklogs...</div>
   }
 
-  if (error) {
-    return <div className="text-center py-12 text-red-500">{error}</div>
+  if (isError) {
+    return <div className="text-center py-12 text-red-500">Failed to load payment-eligible worklogs</div>
   }
 
-  const selectedWorklogs = worklogs.filter((wl) => selectedIds.has(wl.id))
-  const totalAmount = selectedWorklogs.reduce((sum, wl) => sum + wl.amount_earned, 0)
+  const selectedWorklogs = worklogs.filter((wl: any) => selectedIds.has(wl.id))
+  const totalAmount = selectedWorklogs.reduce((sum: number, wl: any) => sum + wl.amount_earned, 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,7 +133,7 @@ export default function PaymentBatch() {
           />
         </div>
         <div className="flex items-end">
-          <Button onClick={fetchWorklogs}>Filter</Button>
+          <Button onClick={() => refetch()}>Filter</Button>
         </div>
       </div>
 
@@ -170,9 +168,9 @@ export default function PaymentBatch() {
                       onCheckedChange={() => handleSelect(wl.id)}
                     />
                   </TableCell>
-                  <TableCell className="font-medium">{wl.task_name}</TableCell>
+                  <TableCell className="font-medium">{wl.item_title}</TableCell>
                   <TableCell>{wl.freelancer_name}</TableCell>
-                  <TableCell>{wl.total_hours}</TableCell>
+                  <TableCell>{wl.hours}</TableCell>
                   <TableCell>${wl.amount_earned.toFixed(2)}</TableCell>
                   <TableCell>{wl.created_at}</TableCell>
                   <TableCell>
@@ -204,9 +202,9 @@ export default function PaymentBatch() {
               <Button
                 className="mt-4"
                 onClick={handleProcessPayment}
-                disabled={processing}
+                disabled={mutation.isPending}
               >
-                {processing ? "Processing..." : "Process Payment"}
+                {mutation.isPending ? "Processing..." : "Process Payment"}
               </Button>
             </div>
           )}
