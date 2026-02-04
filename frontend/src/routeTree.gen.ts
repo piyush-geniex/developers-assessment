@@ -202,7 +202,28 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
-    }
+    },
+    '/_layout/payments': {
+      id: '/_layout/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof LayoutPaymentsRouteImport
+      parentRoute: typeof LayoutRoute
+    },
+    '/_layout/worklogs': {
+      id: '/_layout/worklogs'
+      path: '/worklogs'
+      fullPath: '/worklogs'
+      preLoaderRoute: typeof LayoutWorklogsRouteImport
+      parentRoute: typeof LayoutRoute
+    },
+    '/_layout/freelancers': {
+      id: '/_layout/freelancers'
+      path: '/freelancers'
+      fullPath: '/freelancers'
+      preLoaderRoute: typeof LayoutFreelancersRouteImport
+      parentRoute: typeof LayoutRoute
+    },
   }
 }
 

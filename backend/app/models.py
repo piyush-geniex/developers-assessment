@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -111,3 +112,119 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+# Worklog Payment System Models
+
+# Freelancer Base
+class FreelancerBase(SQLModel):
+    full_name: str = Field(max_length=255)
+    hourly_rate: float = Field(default=0.0)
+    status: str = Field(default="active", max_length=50)
+
+
+# Properties to receive via API on creation
+class FreelancerCreate(FreelancerBase):
+    pass
+
+# Properties to receive via API on update
+class FreelancerUpdate(SQLModel):
+    full_name: str | None = Field(default=None, max_length=255)
+    hourly_rate: float | None = Field(default=None)
+    status: str | None = Field(default=None, max_length=50)
+
+
+# Database model
+class Freelancer(FreelancerBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+# Properties to return via API
+class FreelancerPublic(FreelancerBase):
+    id: uuid.UUID
+    created_at: datetime
+
+
+class FreelancersPublic(SQLModel):
+    data: list[FreelancerPublic]
+    count: int
+
+
+# WorkLog Base
+class WorkLogBase(SQLModel):
+    hours: float = Field(default=0.0)
+    payment_status: str = Field(default="UNPAID", max_length=50)
+
+
+# Properties to receive via API on creation
+class WorkLogCreate(WorkLogBase):
+    freelancer_id: uuid.UUID
+    item_id: uuid.UUID
+
+
+# Properties to receive via API on update
+class WorkLogUpdate(SQLModel):
+    hours: float | None = Field(default=None)
+    payment_status: str | None = Field(default=None, max_length=50)
+
+
+# Database model
+class WorkLog(WorkLogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    freelancer_id: uuid.UUID = Field(foreign_key="freelancer.id", index=True)
+    item_id: uuid.UUID = Field(foreign_key="item.id", index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    paid_at: datetime | None = Field(default=None, index=True)
+
+
+# Properties to return via API
+class WorkLogPublic(WorkLogBase):
+    id: uuid.UUID
+    freelancer_id: uuid.UUID
+    item_id: uuid.UUID
+    item_title: str
+    created_at: datetime
+    paid_at: datetime | None
+
+
+class WorkLogsPublic(SQLModel):
+    data: list[WorkLogPublic]
+    count: int
+
+
+# TimeSegment Base
+class TimeSegmentBase(SQLModel):
+    hours: float = Field(default=0.0)
+    segment_date: datetime = Field(default_factory=datetime.utcnow)
+    notes: str | None = Field(default=None)
+
+
+# Properties to receive via API on creation
+class TimeSegmentCreate(TimeSegmentBase):
+    worklog_id: uuid.UUID
+
+
+# Properties to receive via API on update
+class TimeSegmentUpdate(SQLModel):
+    hours: float | None = Field(default=None)
+    segment_date: datetime | None = Field(default=None)
+    notes: str | None = Field(default=None)
+
+
+# Database model
+class TimeSegment(TimeSegmentBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", index=True)
+
+
+# Properties to return via API
+class TimeSegmentPublic(TimeSegmentBase):
+    id: uuid.UUID
+    worklog_id: uuid.UUID
+
+
+class TimeSegmentsPublic(SQLModel):
+    data: list[TimeSegmentPublic]
+    count: int
+
