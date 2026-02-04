@@ -1,5 +1,6 @@
 import uuid
 
+from datetime import datetime
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -111,3 +112,54 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+
+# WorkLog models
+class WorkLogBase(SQLModel):
+    task_name: str = Field(max_length=255)
+    status: str = Field(default="pending", max_length=50)
+
+
+class WorkLog(WorkLogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    freelancer_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    freelancer: User | None = Relationship()
+    time_entries: list["TimeEntry"] = Relationship(back_populates="worklog", cascade_delete=True)
+
+
+class WorkLogPublic(WorkLogBase):
+    id: uuid.UUID
+    freelancer_id: uuid.UUID
+    created_at: datetime
+    total_amount: float | None = 0.0
+    total_duration_hours: float | None = 0.0
+
+
+class WorkLogsPublic(SQLModel):
+    data: list[WorkLogPublic]
+    count: int
+
+
+# TimeEntry models
+class TimeEntryBase(SQLModel):
+    start_time: datetime
+    end_time: datetime
+    description: str
+    rate: float
+
+
+class TimeEntry(TimeEntryBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+
+    worklog: WorkLog | None = Relationship(back_populates="time_entries")
+
+
+class TimeEntryPublic(TimeEntryBase):
+    id: uuid.UUID
+    worklog_id: uuid.UUID
+    duration_hours: float
+    amount: float
