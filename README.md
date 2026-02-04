@@ -39,3 +39,15 @@ This will start all required services. Once the services are up, you can access:
 - **API Documentation:** `http://localhost:8000/docs`
 - **Backend API:** `http://localhost:8000`
 - **Frontend (Fullstack only):** `http://localhost:5173`
+
+
+## Screenshots
+
+### WorkLogs List
+![WorkLogs List](screenshots/worklogs_list.png)
+
+### Date Range Filter
+![Date Filter](screenshots/filter.png)
+
+### Payment Review
+![Payment Review](screenshots/payment_review.png)
