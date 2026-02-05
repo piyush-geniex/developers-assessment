@@ -59,3 +59,6 @@ This project uses:
 - **PostgreSQL** - Database
 - **Next.js** - React frontend framework
 - **Docker Compose** - Container orchestration
+
+
+
