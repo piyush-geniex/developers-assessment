@@ -2,7 +2,8 @@ import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
-
+from datetime import date
+from typing import List
 
 # Shared properties
 class UserBase(SQLModel):
@@ -111,3 +112,52 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+# --- Core Models ---
+
+class FreelancerBase(SQLModel):
+    name: str = Field(index=True, max_length=255)
+    email: EmailStr = Field(unique=True, index=True, max_length=255)
+
+class Freelancer(FreelancerBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklogs: List["WorkLog"] = Relationship(back_populates="freelancer")
+
+class WorkLogBase(SQLModel):
+    task_name: str = Field(max_length=255)
+    hourly_rate: float
+    status: str = Field(default="pending", max_length=50)
+
+class WorkLog(WorkLogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    freelancer_id: uuid.UUID = Field(foreign_key="freelancer.id", nullable=False)
+    
+    freelancer: Freelancer = Relationship(back_populates="worklogs")
+    time_entries: List["TimeEntry"] = Relationship(back_populates="worklog")
+
+class TimeEntry(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+    date: date
+    hours: float
+    description: str = Field(max_length=255)
+    
+    worklog: WorkLog = Relationship(back_populates="time_entries")
+
+# --- DTOs / API Schemas ---
+
+class TimeEntryPublic(SQLModel):
+    date: date
+    hours: float
+    description: str
+
+class WorkLogPublic(WorkLogBase):
+    id: uuid.UUID
+    freelancer_name: str
+    total_hours: float
+    total_amount: float
+    time_entries: List[TimeEntryPublic] = []
+
+class WorkLogsPublic(SQLModel):
+    data: List[WorkLogPublic]
+    count: int

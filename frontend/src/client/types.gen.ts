@@ -51,6 +51,12 @@ export type PrivateUserCreate = {
     is_verified?: boolean;
 };
 
+export type TimeEntryPublic = {
+    date: string;
+    hours: number;
+    description: string;
+};
+
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -105,6 +111,22 @@ export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
     type: string;
+};
+
+export type WorkLogPublic = {
+    task_name: string;
+    hourly_rate: number;
+    status?: string;
+    id: string;
+    freelancer_name: string;
+    total_hours: number;
+    total_amount: number;
+    time_entries?: Array<TimeEntryPublic>;
+};
+
+export type WorkLogsPublic = {
+    data: Array<WorkLogPublic>;
+    count: number;
 };
 
 export type ItemsReadItemsData = {
@@ -232,3 +254,16 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type WorklogsListWorklogsData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type WorklogsListWorklogsResponse = (WorkLogsPublic);
+
+export type WorklogsPayWorklogData = {
+    id: string;
+};
+
+export type WorklogsPayWorklogResponse = (Message);
