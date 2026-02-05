@@ -21,7 +21,7 @@ You're building an admin dashboard for a company that hires freelancers. Freelan
 To start development, simply run:
 
 ```bash
-docker compose up
+docker compose up db backend frontend
 ```
 
 This will start all required services including the backend API, frontend, database, and any other dependencies. Once the services are up, you can access:
@@ -47,9 +47,6 @@ a. **Screenshots**
 - [ ] Functional frontend implementing the workflows above
 - [ ] Added screenshots of relevant screens
 - [ ] Created Pull Request
-
-
-
 
 ---
 

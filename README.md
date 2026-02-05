@@ -19,6 +19,7 @@ To submit your assessment, please follow these steps:
    - Create a Pull Request from your personal fork back to this repository. Start the title with the role you've applied for. E.g. if Full Stack Developer, start the PR title with 'Full Stack:'
 
 3. **Include Required Documentation**
+
    - Refer to your specific assessment file for the documentation requirements.
 
 4. **Include Required Documentation**
@@ -31,7 +32,13 @@ To submit your assessment, please follow these steps:
 To start development, simply run:
 
 ```bash
-docker compose up
+sudo docker compose -f docker-compose.yml -f docker-compose.override.yml up backend frontend
+```
+
+rebuild command:
+
+```bash
+sudo docker compose -f docker-compose.yml -f docker-compose.override.yml up --build backend frontend
 ```
 
 This will start all required services. Once the services are up, you can access:
