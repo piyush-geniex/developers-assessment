@@ -239,6 +239,27 @@ export const PrivateUserCreateSchema = {
     title: 'PrivateUserCreate'
 } as const;
 
+export const TimeEntryPublicSchema = {
+    properties: {
+        date: {
+            type: 'string',
+            format: 'date',
+            title: 'Date'
+        },
+        hours: {
+            type: 'number',
+            title: 'Hours'
+        },
+        description: {
+            type: 'string',
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['date', 'hours', 'description'],
+    title: 'TimeEntryPublic'
+} as const;
+
 export const TokenSchema = {
     properties: {
         access_token: {
@@ -525,4 +546,71 @@ export const ValidationErrorSchema = {
     type: 'object',
     required: ['loc', 'msg', 'type'],
     title: 'ValidationError'
+} as const;
+
+export const WorkLogPublicSchema = {
+    properties: {
+        task_name: {
+            type: 'string',
+            maxLength: 255,
+            title: 'Task Name'
+        },
+        hourly_rate: {
+            type: 'number',
+            title: 'Hourly Rate'
+        },
+        status: {
+            type: 'string',
+            maxLength: 50,
+            title: 'Status',
+            default: 'pending'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        freelancer_name: {
+            type: 'string',
+            title: 'Freelancer Name'
+        },
+        total_hours: {
+            type: 'number',
+            title: 'Total Hours'
+        },
+        total_amount: {
+            type: 'number',
+            title: 'Total Amount'
+        },
+        time_entries: {
+            items: {
+                '$ref': '#/components/schemas/TimeEntryPublic'
+            },
+            type: 'array',
+            title: 'Time Entries',
+            default: []
+        }
+    },
+    type: 'object',
+    required: ['task_name', 'hourly_rate', 'id', 'freelancer_name', 'total_hours', 'total_amount'],
+    title: 'WorkLogPublic'
+} as const;
+
+export const WorkLogsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/WorkLogPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'WorkLogsPublic'
 } as const;
