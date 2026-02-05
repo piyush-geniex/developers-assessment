@@ -21,7 +21,7 @@ You're building an admin dashboard for a company that hires freelancers. Freelan
 To start development, simply run:
 
 ```bash
-docker compose up
+docker compose up db backend frontend
 ```
 
 This will start all required services including the backend API, frontend, database, and any other dependencies. Once the services are up, you can access:
@@ -34,7 +34,7 @@ This will start all required services including the backend API, frontend, datab
 
 ## Required Documentation
 
-Your PR must include:
+Your implementation must include:
 
 a. **Screenshots**
    - Include screenshots of all screens you think are relevant to your implementation.
@@ -48,9 +48,6 @@ a. **Screenshots**
 - [ ] Added screenshots of relevant screens
 - [ ] Created Pull Request
 
-
-
-
 ---
 
 ## Technology Stack
@@ -62,3 +59,6 @@ This project uses:
 - **PostgreSQL** - Database
 - **Next.js** - React frontend framework
 - **Docker Compose** - Container orchestration
+
+
+

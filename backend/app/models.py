@@ -1,5 +1,7 @@
 import uuid
 
+from datetime import datetime, date
+
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -111,3 +113,91 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class TimeEntryBase(SQLModel):
+    start_time: datetime
+    end_time: datetime
+    rate_per_hour: float = Field(gt=0)
+    notes: str | None = Field(default=None, max_length=255)
+
+
+class TimeEntry(TimeEntryBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False)
+
+
+class TimeEntryPublic(TimeEntryBase):
+    id: uuid.UUID
+    amount: float
+
+
+class TimeEntriesPublic(SQLModel):
+    data: list[TimeEntryPublic]
+    count: int
+
+
+class TimeEntryCreate(TimeEntryBase):
+    pass
+
+
+class WorklogBase(SQLModel):
+    task_name: str = Field(min_length=1, max_length=255)
+    freelancer_id: uuid.UUID
+    status: str = Field(default="pending", max_length=50)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class Worklog(WorklogBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+
+class WorklogCreate(WorklogBase):
+    pass
+
+
+class WorklogSummary(SQLModel):
+    id: uuid.UUID
+    task_name: str
+    freelancer_id: uuid.UUID
+    status: str
+    total_amount: float
+    first_entry_at: datetime | None = None
+    last_entry_at: datetime | None = None
+
+
+class WorklogsPublic(SQLModel):
+    data: list[WorklogSummary]
+    count: int
+
+
+class WorklogDetail(SQLModel):
+    id: uuid.UUID
+    task_name: str
+    freelancer_id: uuid.UUID
+    status: str
+    total_amount: float
+    entries: list[TimeEntryPublic]
+
+
+class PaymentBatchBase(SQLModel):
+    from_date: date
+    to_date: date
+
+
+class PaymentBatch(PaymentBatchBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    total_amount: float
+    worklog_ids: str
+
+
+class PaymentBatchPublic(PaymentBatchBase):
+    id: uuid.UUID
+    total_amount: float
+    worklogs: list[WorklogSummary]
+
+
+class PaymentBatchCreate(PaymentBatchBase):
+    worklog_ids: list[uuid.UUID] | None = None
+    exclude_worklog_ids: list[uuid.UUID] | None = None
+    exclude_freelancer_ids: list[uuid.UUID] | None = None
