@@ -34,7 +34,7 @@ This will start all required services including the backend API, frontend, datab
 
 ## Required Documentation
 
-Your PR must include:
+Your implementation must include:
 
 a. **Screenshots**
    - Include screenshots of all screens you think are relevant to your implementation.

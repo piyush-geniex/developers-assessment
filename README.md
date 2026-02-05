@@ -41,6 +41,11 @@ rebuild command:
 sudo docker compose -f docker-compose.yml -f docker-compose.override.yml up --build backend frontend
 ```
 
+
+
+
+
+
 This will start all required services. Once the services are up, you can access:
 
 - **API Documentation:** `http://localhost:8000/docs`
