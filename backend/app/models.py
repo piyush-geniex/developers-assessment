@@ -3,6 +3,8 @@ import uuid
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
+from app.worklog.models import Freelancer, Payment, TimeEntry, WorkLog
+
 
 # Shared properties
 class UserBase(SQLModel):
