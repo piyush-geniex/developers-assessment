@@ -7,7 +7,15 @@ from sqlmodel import Session, delete
 from app.core.config import settings
 from app.core.db import engine, init_db
 from app.main import app
-from app.models import Item, User
+from app.models import (
+    Adjustment,
+    Item,
+    Remittance,
+    RemittanceWorklog,
+    TimeSegment,
+    User,
+    WorkLog,
+)
 from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_superuser_token_headers
 
@@ -17,10 +25,14 @@ def db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         init_db(session)
         yield session
-        statement = delete(Item)
-        session.execute(statement)
-        statement = delete(User)
-        session.execute(statement)
+        # Clean up in FK-safe order
+        session.execute(delete(RemittanceWorklog))
+        session.execute(delete(Remittance))
+        session.execute(delete(Adjustment))
+        session.execute(delete(TimeSegment))
+        session.execute(delete(WorkLog))
+        session.execute(delete(Item))
+        session.execute(delete(User))
         session.commit()
 
 
