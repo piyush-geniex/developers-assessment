@@ -1,0 +1,88 @@
+// WorkLog Settlement System - Database Schema
+
+Table user {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  email varchar(255) [unique, not null]
+  is_active boolean [default: true]
+  is_superuser boolean [default: false]
+  full_name varchar(255)
+  hashed_password varchar [not null]
+}
+
+Table item {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  title varchar(255) [not null]
+  description varchar(255)
+  owner_id uuid [not null, ref: > user.id]
+}
+
+Table worklog {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [not null, ref: > user.id]
+  title varchar(255) [not null]
+  status varchar(32) [not null, default: 'ACTIVE', note: 'ACTIVE, CLOSED']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    user_id
+    status
+    created_at
+  }
+}
+
+Table time_segment {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  worklog_id uuid [not null, ref: > worklog.id]
+  hours float [not null]
+  rate float [not null]
+  status varchar(32) [not null, default: 'ACTIVE', note: 'ACTIVE, REMOVED']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    worklog_id
+    status
+    created_at
+  }
+}
+
+Table adjustment {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  worklog_id uuid [not null, ref: > worklog.id]
+  amount float [not null, note: 'positive = bonus, negative = deduction']
+  reason varchar(255) [not null]
+  status varchar(32) [not null, default: 'ACTIVE', note: 'ACTIVE, VOIDED']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    worklog_id
+    status
+    created_at
+  }
+}
+
+Table remittance {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  user_id uuid [not null, ref: > user.id]
+  amount float [not null]
+  status varchar(32) [not null, default: 'PENDING', note: 'PENDING, SETTLED, FAILED, CANCELLED']
+  period varchar(16) [not null, note: 'YYYY-MM format']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    user_id
+    status
+    created_at
+  }
+}
+
+Table remittance_worklog {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  remittance_id uuid [not null, ref: > remittance.id]
+  worklog_id uuid [not null, ref: > worklog.id]
+  amount float [not null, note: 'amount attributed from this worklog']
+
+  indexes {
+    remittance_id
+    worklog_id
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "generate_remittances_for_all_users": {
+    "endpoint": "POST /api/v1/settlement/generate-remittances-for-all-users",
+    "auth": "Superuser only (Bearer token required)",
+    "response": {
+      "data": [
+        {
+          "id": "770d637e-a571-4fa1-bc1b-dcb5a0b86b9a",
+          "user_id": "60dcab1b-554e-4d8c-8e2f-312b90d9f6cc",
+          "amount": 760.0,
+          "status": "PENDING",
+          "period": "2026-02"
+        },
+        {
+          "id": "6b7c9f38-dc83-4ef5-a1ee-f489bee86866",
+          "user_id": "4b1eba1b-4d47-4592-8c19-aff06164996b",
+          "amount": 540.0,
+          "status": "PENDING",
+          "period": "2026-02"
+        }
+      ],
+      "count": 2
+    }
+  },
+  "list_all_worklogs": {
+    "endpoint": "GET /api/v1/settlement/list-all-worklogs",
+    "auth": "Any authenticated user (Bearer token required). Superusers see all; normal users see their own.",
+    "response": {
+      "data": [
+        {
+          "id": "8b231513-91ae-4e64-935c-50495207d733",
+          "user_id": "60dcab1b-554e-4d8c-8e2f-312b90d9f6cc",
+          "title": "API Integration Task",
+          "amount": 350.0,
+          "remittance_status": "UNREMITTED"
+        },
+        {
+          "id": "811300ed-7444-4dc0-9afc-2d7b353ba3b3",
+          "user_id": "60dcab1b-554e-4d8c-8e2f-312b90d9f6cc",
+          "title": "Database Migration Task",
+          "amount": 410.0,
+          "remittance_status": "UNREMITTED"
+        },
+        {
+          "id": "3ea1d0ec-c28b-44a6-aea7-d52e0e4b8aed",
+          "user_id": "4b1eba1b-4d47-4592-8c19-aff06164996b",
+          "title": "Frontend Component Build",
+          "amount": 540.0,
+          "remittance_status": "UNREMITTED"
+        },
+        {
+          "id": "b4c93dbe-5238-4ee4-93ba-220722a0c2fe",
+          "user_id": "4b1eba1b-4d47-4592-8c19-aff06164996b",
+          "title": "Testing Automation Setup",
+          "amount": 275.0,
+          "remittance_status": "REMITTED"
+        }
+      ],
+      "count": 4
+    }
+  },
+  "list_all_worklogs_filtered_remitted": {
+    "endpoint": "GET /api/v1/settlement/list-all-worklogs?remittanceStatus=REMITTED",
+    "response": {
+      "data": [
+        {
+          "id": "b4c93dbe-5238-4ee4-93ba-220722a0c2fe",
+          "user_id": "4b1eba1b-4d47-4592-8c19-aff06164996b",
+          "title": "Testing Automation Setup",
+          "amount": 275.0,
+          "remittance_status": "REMITTED"
+        }
+      ],
+      "count": 1
+    }
+  },
+  "list_all_worklogs_filtered_unremitted": {
+    "endpoint": "GET /api/v1/settlement/list-all-worklogs?remittanceStatus=UNREMITTED",
+    "response": {
+      "data": [
+        {
+          "id": "8b231513-91ae-4e64-935c-50495207d733",
+          "user_id": "60dcab1b-554e-4d8c-8e2f-312b90d9f6cc",
+          "title": "API Integration Task",
+          "amount": 350.0,
+          "remittance_status": "UNREMITTED"
+        },
+        {
+          "id": "811300ed-7444-4dc0-9afc-2d7b353ba3b3",
+          "user_id": "60dcab1b-554e-4d8c-8e2f-312b90d9f6cc",
+          "title": "Database Migration Task",
+          "amount": 410.0,
+          "remittance_status": "UNREMITTED"
+        },
+        {
+          "id": "3ea1d0ec-c28b-44a6-aea7-d52e0e4b8aed",
+          "user_id": "4b1eba1b-4d47-4592-8c19-aff06164996b",
+          "title": "Frontend Component Build",
+          "amount": 540.0,
+          "remittance_status": "UNREMITTED"
+        }
+      ],
+      "count": 3
+    }
+  }
+}

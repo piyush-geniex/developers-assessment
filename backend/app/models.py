@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -111,3 +112,52 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class WorkLog(SQLModel, table=True):
+    __tablename__ = "worklog"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, index=True)
+    title: str = Field(max_length=255)
+    status: str = Field(default="ACTIVE", max_length=32, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class TimeSegment(SQLModel, table=True):
+    __tablename__ = "time_segment"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False, index=True)
+    hours: float = Field()
+    rate: float = Field()
+    status: str = Field(default="ACTIVE", max_length=32, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class Adjustment(SQLModel, table=True):
+    __tablename__ = "adjustment"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False, index=True)
+    amount: float = Field()
+    reason: str = Field(max_length=255)
+    status: str = Field(default="ACTIVE", max_length=32, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class Remittance(SQLModel, table=True):
+    __tablename__ = "remittance"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, index=True)
+    amount: float = Field()
+    status: str = Field(default="PENDING", max_length=32, index=True)
+    period: str = Field(max_length=16)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class RemittanceWorklog(SQLModel, table=True):
+    __tablename__ = "remittance_worklog"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    remittance_id: uuid.UUID = Field(
+        foreign_key="remittance.id", nullable=False, index=True
+    )
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", nullable=False, index=True)
+    amount: float = Field()
