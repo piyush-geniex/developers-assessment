@@ -1,6 +1,7 @@
 import uuid
+from datetime import date, datetime
 
-from pydantic import EmailStr
+from pydantic import EmailStr, field_validator
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -44,6 +45,7 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    worklogs: list["WorkLog"] = Relationship(back_populates="user")
 
 
 # Properties to return via API, id is always required
@@ -78,7 +80,8 @@ class Item(ItemBase, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
-    owner: User | None = Relationship(back_populates="items")
+    owner: "User" = Relationship(back_populates="items")
+    worklogs: list["WorkLog"] = Relationship(back_populates="item")
 
 
 # Properties to return via API, id is always required
@@ -90,6 +93,115 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+# Payment batch for grouping worklog payments
+class PaymentBatch(SQLModel, table=True):
+    __tablename__ = "payment_batch"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    total_amount: float = Field(default=0, ge=0)
+    status: str = Field(default="completed", max_length=32, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+# WorkLog domain: freelancers log time against tasks (items)
+class WorkLog(SQLModel, table=True):
+    __tablename__ = "worklog"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    item_id: uuid.UUID = Field(foreign_key="item.id", nullable=False, index=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, index=True)
+    status: str = Field(default="pending", max_length=32, index=True)
+    payment_batch_id: uuid.UUID | None = Field(
+        default=None, foreign_key="payment_batch.id", index=True
+    )
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+    item: "Item" = Relationship(back_populates="worklogs")
+    user: "User" = Relationship(back_populates="worklogs")
+    time_entries: list["TimeEntry"] = Relationship(
+        back_populates="worklog", cascade_delete=True
+    )
+
+
+class TimeEntry(SQLModel, table=True):
+    __tablename__ = "time_entry"
+
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(
+        foreign_key="worklog.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    hours: float = Field(ge=0)
+    rate: float = Field(ge=0)
+    entry_date: date = Field(index=True)
+    description: str | None = Field(default=None, max_length=255)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+    worklog: "WorkLog" = Relationship(back_populates="time_entries")
+
+
+# API response schemas for worklog domain
+class TimeEntryPublic(SQLModel):
+    id: uuid.UUID
+    worklog_id: uuid.UUID
+    hours: float
+    rate: float
+    entry_date: date
+    description: str | None
+    created_at: datetime
+
+
+class WorkLogDetailPublic(SQLModel):
+    id: uuid.UUID
+    item_id: uuid.UUID
+    user_id: uuid.UUID
+    status: str
+    total_amount: float
+    created_at: datetime
+    task_title: str
+    freelancer_email: str
+    time_entries: list[TimeEntryPublic]
+
+
+class WorkLogListItemPublic(SQLModel):
+    id: uuid.UUID
+    item_id: uuid.UUID
+    user_id: uuid.UUID
+    status: str
+    total_amount: float
+    created_at: datetime
+    task_title: str
+    freelancer_email: str
+    payment_batch_id: uuid.UUID | None = None
+
+
+class WorkLogsPublic(SQLModel):
+    data: list[WorkLogListItemPublic]
+    count: int
+
+
+class PaymentBatchCreate(SQLModel):
+    """worklog_ids: list of worklog IDs to include in payment (after user excludes)."""
+
+    worklog_ids: list[uuid.UUID] = []
+
+    @field_validator("worklog_ids")
+    @classmethod
+    def validate_worklog_ids(cls, v: list) -> list:
+        if v is None:
+            return []
+        if not isinstance(v, list):
+            raise ValueError("must be a list")
+        return v
+
+
+class PaymentBatchPublic(SQLModel):
+    id: uuid.UUID
+    total_amount: float
+    status: str
+    created_at: datetime
+    worklog_count: int
 
 
 # Generic message
