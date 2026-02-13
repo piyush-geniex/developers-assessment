@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, WorklogsReadWorklogsData, WorklogsReadWorklogsResponse, WorklogsReadWorklogData, WorklogsReadWorklogResponse, WorklogsProcessPaymentsData, WorklogsProcessPaymentsResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -463,6 +463,82 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class WorklogsService {
+    /**
+     * Read Worklogs
+     * Retrieve worklogs with filters.
+     * @param data The data for the request.
+     * @param data.startDate
+     * @param data.endDate
+     * @param data.skip
+     * @param data.limit
+     * @returns WorkLogsPublic Successful Response
+     * @throws ApiError
+     */
+    public static readWorklogs(data: WorklogsReadWorklogsData = {}): CancelablePromise<WorklogsReadWorklogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/worklogs/',
+            query: {
+                start_date: data.startDate,
+                end_date: data.endDate,
+                skip: data.skip,
+                limit: data.limit
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Worklog
+     * Get worklog by ID with details.
+     * @param data The data for the request.
+     * @param data.id
+     * @param data.startDate
+     * @param data.endDate
+     * @returns WorkLogDetail Successful Response
+     * @throws ApiError
+     */
+    public static readWorklog(data: WorklogsReadWorklogData): CancelablePromise<WorklogsReadWorklogResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/worklogs/{id}',
+            path: {
+                id: data.id
+            },
+            query: {
+                start_date: data.startDate,
+                end_date: data.endDate
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Process Payments
+     * Process payments for a batch of worklogs.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static processPayments(data: WorklogsProcessPaymentsData): CancelablePromise<WorklogsProcessPaymentsResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/worklogs/process-payments',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }

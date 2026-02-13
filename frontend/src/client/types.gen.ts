@@ -44,11 +44,28 @@ export type NewPassword = {
     new_password: string;
 };
 
+export type PaymentBatchCreate = {
+    worklog_ids?: Array<(string)>;
+    time_entry_ids?: Array<(string)>;
+    excluded_freelancer_ids?: Array<(string)>;
+};
+
 export type PrivateUserCreate = {
     email: string;
     password: string;
     full_name: string;
     is_verified?: boolean;
+};
+
+export type TimeEntryPublic = {
+    date: string;
+    hours: number;
+    hourly_rate: number;
+    description?: (string | null);
+    id: string;
+    worklog_id: string;
+    is_paid: boolean;
+    paid_at: (string | null);
 };
 
 export type Token = {
@@ -106,6 +123,34 @@ export type ValidationError = {
     msg: string;
     type: string;
 };
+
+export type WorkLogDetail = {
+    task_name: string;
+    status?: WorkLogStatus;
+    id: string;
+    freelancer_uuid: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    total_earned?: number;
+    time_entries: Array<TimeEntryPublic>;
+};
+
+export type WorkLogPublic = {
+    task_name: string;
+    status?: WorkLogStatus;
+    id: string;
+    freelancer_uuid: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    total_earned?: number;
+};
+
+export type WorkLogsPublic = {
+    data: Array<WorkLogPublic>;
+    count: number;
+};
+
+export type WorkLogStatus = 'pending' | 'paid';
 
 export type ItemsReadItemsData = {
     limit?: number;
@@ -232,3 +277,26 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type WorklogsReadWorklogsData = {
+    endDate?: (string | null);
+    limit?: number;
+    skip?: number;
+    startDate?: (string | null);
+};
+
+export type WorklogsReadWorklogsResponse = (WorkLogsPublic);
+
+export type WorklogsReadWorklogData = {
+    endDate?: (string | null);
+    id: string;
+    startDate?: (string | null);
+};
+
+export type WorklogsReadWorklogResponse = (WorkLogDetail);
+
+export type WorklogsProcessPaymentsData = {
+    requestBody: PaymentBatchCreate;
+};
+
+export type WorklogsProcessPaymentsResponse = (Message);

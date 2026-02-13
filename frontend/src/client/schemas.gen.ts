@@ -214,6 +214,40 @@ export const NewPasswordSchema = {
     title: 'NewPassword'
 } as const;
 
+export const PaymentBatchCreateSchema = {
+    properties: {
+        worklog_ids: {
+            items: {
+                type: 'string',
+                format: 'uuid'
+            },
+            type: 'array',
+            title: 'Worklog Ids',
+            default: []
+        },
+        time_entry_ids: {
+            items: {
+                type: 'string',
+                format: 'uuid'
+            },
+            type: 'array',
+            title: 'Time Entry Ids',
+            default: []
+        },
+        excluded_freelancer_ids: {
+            items: {
+                type: 'string',
+                format: 'uuid'
+            },
+            type: 'array',
+            title: 'Excluded Freelancer Ids',
+            default: []
+        }
+    },
+    type: 'object',
+    title: 'PaymentBatchCreate'
+} as const;
+
 export const PrivateUserCreateSchema = {
     properties: {
         email: {
@@ -237,6 +271,67 @@ export const PrivateUserCreateSchema = {
     type: 'object',
     required: ['email', 'password', 'full_name'],
     title: 'PrivateUserCreate'
+} as const;
+
+export const TimeEntryPublicSchema = {
+    properties: {
+        date: {
+            type: 'string',
+            format: 'date',
+            title: 'Date'
+        },
+        hours: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            title: 'Hours'
+        },
+        hourly_rate: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            title: 'Hourly Rate'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        worklog_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Worklog Id'
+        },
+        is_paid: {
+            type: 'boolean',
+            title: 'Is Paid'
+        },
+        paid_at: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Paid At'
+        }
+    },
+    type: 'object',
+    required: ['date', 'hours', 'hourly_rate', 'id', 'worklog_id', 'is_paid', 'paid_at'],
+    title: 'TimeEntryPublic'
 } as const;
 
 export const TokenSchema = {
@@ -525,4 +620,118 @@ export const ValidationErrorSchema = {
     type: 'object',
     required: ['loc', 'msg', 'type'],
     title: 'ValidationError'
+} as const;
+
+export const WorkLogDetailSchema = {
+    properties: {
+        task_name: {
+            type: 'string',
+            maxLength: 255,
+            minLength: 1,
+            title: 'Task Name'
+        },
+        status: {
+            '$ref': '#/components/schemas/WorkLogStatus',
+            default: 'pending'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        freelancer_uuid: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Freelancer Uuid'
+        },
+        freelancer_id: {
+            type: 'string',
+            title: 'Freelancer Id'
+        },
+        freelancer_name: {
+            type: 'string',
+            title: 'Freelancer Name'
+        },
+        total_earned: {
+            type: 'number',
+            title: 'Total Earned',
+            default: 0
+        },
+        time_entries: {
+            items: {
+                '$ref': '#/components/schemas/TimeEntryPublic'
+            },
+            type: 'array',
+            title: 'Time Entries'
+        }
+    },
+    type: 'object',
+    required: ['task_name', 'id', 'freelancer_uuid', 'freelancer_id', 'freelancer_name', 'time_entries'],
+    title: 'WorkLogDetail'
+} as const;
+
+export const WorkLogPublicSchema = {
+    properties: {
+        task_name: {
+            type: 'string',
+            maxLength: 255,
+            minLength: 1,
+            title: 'Task Name'
+        },
+        status: {
+            '$ref': '#/components/schemas/WorkLogStatus',
+            default: 'pending'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        freelancer_uuid: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Freelancer Uuid'
+        },
+        freelancer_id: {
+            type: 'string',
+            title: 'Freelancer Id'
+        },
+        freelancer_name: {
+            type: 'string',
+            title: 'Freelancer Name'
+        },
+        total_earned: {
+            type: 'number',
+            title: 'Total Earned',
+            default: 0
+        }
+    },
+    type: 'object',
+    required: ['task_name', 'id', 'freelancer_uuid', 'freelancer_id', 'freelancer_name'],
+    title: 'WorkLogPublic'
+} as const;
+
+export const WorkLogStatusSchema = {
+    type: 'string',
+    enum: ['pending', 'paid'],
+    title: 'WorkLogStatus'
+} as const;
+
+export const WorkLogsPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/WorkLogPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'WorkLogsPublic'
 } as const;
