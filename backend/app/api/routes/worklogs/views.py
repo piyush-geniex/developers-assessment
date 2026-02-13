@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import TimeEntry, WorklogsSummary
+from app.models import TimeEntry, UserRole, WorklogsSummary
 
 from .service import WorklogService
 
@@ -20,6 +20,10 @@ def read_worklogs_summary(
     date_to: datetime | None = Query(None),
     freelancer_id: str | None = Query(None),
 ) -> Any:
+    is_admin = current_user.is_superuser or current_user.role == UserRole.ADMIN
+    if not is_admin:
+        freelancer_id = str(current_user.id)
+
     summaries = WorklogService.get_worklog_summary(
         session=session,
         date_from=date_from,
