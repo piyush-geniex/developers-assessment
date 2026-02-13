@@ -1,0 +1,70 @@
+Table user {
+  id uuid [primary key]
+  email varchar(255) [unique]
+  is_active boolean [default: true]
+  is_superuser boolean [default: false]
+  full_name varchar(255)
+  hashed_password varchar
+}
+
+Table worklog {
+  id uuid [primary key]
+  user_id uuid [ref: > user.id]
+  task_id varchar
+  created_at timestamp
+  updated_at timestamp
+  
+  indexes {
+    user_id
+    task_id
+    created_at
+    updated_at
+  }
+}
+
+Table timesegment {
+  id uuid [primary key]
+  worklog_id uuid [ref: > worklog.id]
+  hours float
+  rate float
+  created_at timestamp
+  
+  indexes {
+    worklog_id
+    created_at
+  }
+}
+
+Table adjustment {
+  id uuid [primary key]
+  worklog_id uuid [ref: > worklog.id]
+  amount float
+  reason varchar(500)
+  created_at timestamp
+  
+  indexes {
+    worklog_id
+    created_at
+  }
+}
+
+Table remittance {
+  id uuid [primary key]
+  user_id uuid [ref: > user.id]
+  amount float
+  status varchar [default: 'PENDING']
+  period_start timestamp
+  period_end timestamp
+  created_at timestamp
+  updated_at timestamp
+  
+  indexes {
+    user_id
+    status
+    period_start
+    period_end
+    created_at
+    updated_at
+  }
+}
+

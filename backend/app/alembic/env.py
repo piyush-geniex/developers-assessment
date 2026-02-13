@@ -20,6 +20,7 @@ fileConfig(config.config_file_name)
 
 from app.models import SQLModel  # noqa
 from app.core.config import settings # noqa
+from app.worklog import models as worklog_models  # noqa: F401 - Import to register models
 
 target_metadata = SQLModel.metadata
 
