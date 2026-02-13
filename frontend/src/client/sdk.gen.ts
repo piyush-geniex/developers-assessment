@@ -652,6 +652,7 @@ export class WorklogsService {
             query: {
                 date_from: data.dateFrom,
                 date_to: data.dateTo,
+                freelancer_id: data.freelancerId,
             },
             errors: {
                 422: 'Validation Error'

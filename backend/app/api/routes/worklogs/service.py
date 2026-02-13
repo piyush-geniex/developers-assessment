@@ -11,6 +11,7 @@ class WorklogService:
         session: Session,
         date_from: datetime | None = None,
         date_to: datetime | None = None,
+        freelancer_id: str | None = None,
     ) -> list[WorklogSummary]:
         statement = (
             select(
@@ -35,6 +36,8 @@ class WorklogService:
             statement = statement.where(TimeEntry.start_time >= date_from)
         if date_to:
             statement = statement.where(TimeEntry.end_time <= date_to)
+        if freelancer_id:
+            statement = statement.where(TimeEntry.freelancer_id == freelancer_id)
 
         results = session.exec(statement).all()
 

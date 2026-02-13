@@ -3,13 +3,21 @@ import { createFileRoute } from "@tanstack/react-router"
 import { BarChart3 } from "lucide-react"
 import { useState } from "react"
 
-import { WorklogsService } from "@/client"
+import { UsersService, WorklogsService } from "@/client"
 import { DataTable } from "@/components/Common/DataTable"
 import { columns } from "@/components/Worklogs/columns"
 import PendingItems from "@/components/Pending/PendingItems"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import useAuth from "@/hooks/useAuth"
 
 export const Route = createFileRoute("/_layout/worklogs")({
   component: Worklogs,
@@ -19,9 +27,23 @@ export const Route = createFileRoute("/_layout/worklogs")({
 })
 
 function Worklogs() {
+  const { user: currentUser } = useAuth()
+  const isSuperuser = !!(currentUser?.is_superuser || currentUser?.role === "ADMIN")
+
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
-  const [filters, setFilters] = useState<{ dateFrom?: string; dateTo?: string }>({})
+  const [freelancerId, setFreelancerId] = useState("")
+  const [filters, setFilters] = useState<{
+    dateFrom?: string
+    dateTo?: string
+    freelancerId?: string
+  }>({})
+
+  const { data: usersData } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => UsersService.readUsers({ skip: 0, limit: 100 }),
+    enabled: isSuperuser,
+  })
 
   const { data, isLoading } = useQuery({
     queryKey: ["worklogs", filters],
@@ -29,6 +51,7 @@ function Worklogs() {
       WorklogsService.readWorklogsSummary({
         dateFrom: filters.dateFrom || undefined,
         dateTo: filters.dateTo || undefined,
+        freelancerId: filters.freelancerId || undefined,
       }),
   })
 
@@ -36,14 +59,18 @@ function Worklogs() {
     setFilters({
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
+      freelancerId: freelancerId || undefined,
     })
   }
 
   const handleClear = () => {
     setDateFrom("")
     setDateTo("")
+    setFreelancerId("")
     setFilters({})
   }
+
+  const hasFilters = filters.dateFrom || filters.dateTo || filters.freelancerId
 
   const totalHours = data?.data.reduce((sum, row) => sum + row.total_hours, 0) ?? 0
   const totalAmount = data?.data.reduce((sum, row) => sum + row.total_amount, 0) ?? 0
@@ -76,9 +103,26 @@ function Worklogs() {
             className="w-40"
           />
         </div>
+        {isSuperuser && (
+          <div className="flex flex-col gap-1.5">
+            <Label>Freelancer</Label>
+            <Select value={freelancerId} onValueChange={setFreelancerId}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="All freelancers" />
+              </SelectTrigger>
+              <SelectContent>
+                {usersData?.data.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.full_name || u.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="flex gap-2">
           <Button onClick={handleApply}>Apply</Button>
-          {(filters.dateFrom || filters.dateTo) && (
+          {hasFilters && (
             <Button variant="outline" onClick={handleClear}>Clear</Button>
           )}
         </div>

@@ -93,6 +93,7 @@ export type TimeEntryPublic = {
     description?: (string | null);
     id: string;
     freelancer_id: string;
+    freelancer_name: string;
     created_at: string;
     task_title: string;
 };
@@ -140,7 +141,7 @@ export type UserRegister = {
     full_name?: (string | null);
 };
 
-export type UserRole = 'admin' | 'freelancer';
+export type UserRole = 'ADMIN' | 'FREELANCER';
 
 export type UsersPublic = {
     data: Array<UserPublic>;
@@ -376,6 +377,7 @@ export type WorklogsSummary = {
 export type WorklogsReadWorklogsSummaryData = {
     dateFrom?: (string | null);
     dateTo?: (string | null);
+    freelancerId?: (string | null);
 };
 
 export type WorklogsReadWorklogsSummaryResponse = (WorklogsSummary);

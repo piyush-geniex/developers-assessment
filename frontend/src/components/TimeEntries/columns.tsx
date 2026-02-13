@@ -3,7 +3,8 @@ import type { ColumnDef } from "@tanstack/react-table"
 import type { TimeEntryPublic } from "@/client"
 import { TimeEntryActionsMenu } from "./TimeEntryActionsMenu"
 
-export const columns: ColumnDef<TimeEntryPublic>[] = [
+export function getColumns(isSuperuser: boolean): ColumnDef<TimeEntryPublic>[] {
+  return [
   {
     accessorKey: "task_title",
     header: "Task",
@@ -68,13 +69,23 @@ export const columns: ColumnDef<TimeEntryPublic>[] = [
       )
     },
   },
-  {
-    id: "actions",
-    header: () => <span className="sr-only">Actions</span>,
-    cell: ({ row }) => (
-      <div className="flex justify-end">
-        <TimeEntryActionsMenu timeEntry={row.original} />
-      </div>
-    ),
-  },
-]
+    ...(isSuperuser
+      ? [{
+          accessorKey: "freelancer_name" as const,
+          header: "Freelancer",
+          cell: ({ row }: { row: { original: TimeEntryPublic } }) => (
+            <span className="text-sm">{row.original.freelancer_name}</span>
+          ),
+        }]
+      : []),
+    {
+      id: "actions",
+      header: () => <span className="sr-only">Actions</span>,
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <TimeEntryActionsMenu timeEntry={row.original} />
+        </div>
+      ),
+    },
+  ]
+}

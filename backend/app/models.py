@@ -197,6 +197,7 @@ class TimeEntry(TimeEntryBase, table=True):
 class TimeEntryPublic(TimeEntryBase):
     id: uuid.UUID
     freelancer_id: uuid.UUID
+    freelancer_name: str
     created_at: datetime
     task_title: str
 

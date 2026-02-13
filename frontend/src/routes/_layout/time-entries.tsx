@@ -6,8 +6,9 @@ import { Suspense } from "react"
 import { TimeEntriesService } from "@/client"
 import { DataTable } from "@/components/Common/DataTable"
 import AddTimeEntry from "@/components/TimeEntries/AddTimeEntry"
-import { columns } from "@/components/TimeEntries/columns"
+import { getColumns } from "@/components/TimeEntries/columns"
 import PendingItems from "@/components/Pending/PendingItems"
+import useAuth from "@/hooks/useAuth"
 
 function getTimeEntriesQueryOptions() {
   return {
@@ -28,7 +29,9 @@ export const Route = createFileRoute("/_layout/time-entries")({
 })
 
 function TimeEntriesTableContent() {
+  const { user: currentUser } = useAuth()
   const { data: timeEntries } = useSuspenseQuery(getTimeEntriesQueryOptions())
+  const columns = getColumns(!!(currentUser?.is_superuser || currentUser?.role === "ADMIN"))
 
   if (timeEntries.data.length === 0) {
     return (

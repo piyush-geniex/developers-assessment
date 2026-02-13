@@ -1,8 +1,8 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
-from sqlmodel import Session, func, select
+from fastapi import APIRouter
+from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
@@ -13,11 +13,21 @@ from app.models import (
     TimeEntryPublic,
     TimeEntriesPublic,
     TimeEntryUpdate,
+    User,
 )
 
 from .service import TimeEntryService
 
 router = APIRouter(prefix="/time-entries", tags=["time-entries"])
+
+
+def _enrich_entry(session: Any, entry: TimeEntry) -> TimeEntryPublic:
+    task = session.get(Task, entry.task_id)
+    freelancer = session.get(User, entry.freelancer_id)
+    entry_dict = entry.model_dump()
+    entry_dict["task_title"] = task.title if task else "Unknown Task"
+    entry_dict["freelancer_name"] = freelancer.full_name if freelancer and freelancer.full_name else "Unknown"
+    return TimeEntryPublic(**entry_dict)
 
 
 @router.get("/", response_model=TimeEntriesPublic)
@@ -35,14 +45,10 @@ def read_time_entries(
         session=session, current_user=current_user, skip=skip, limit=limit
     )
 
-    data = []
-    for entry in time_entries:
-        task = session.get(Task, entry.task_id)
-        entry_dict = entry.model_dump()
-        entry_dict["task_title"] = task.title if task else "Unknown Task"
-        data.append(TimeEntryPublic(**entry_dict))
-
-    return TimeEntriesPublic(data=data, count=count)
+    return TimeEntriesPublic(
+        data=[_enrich_entry(session, e) for e in time_entries],
+        count=count,
+    )
 
 
 @router.post("/", response_model=TimeEntryPublic)
@@ -52,19 +58,13 @@ def create_time_entry(
     entry = TimeEntryService.create_time_entry(
         session=session, current_user=current_user, time_entry_in=time_entry_in
     )
-    task = session.get(Task, entry.task_id)
-    entry_dict = entry.model_dump()
-    entry_dict["task_title"] = task.title if task else "Unknown Task"
-    return TimeEntryPublic(**entry_dict)
+    return _enrich_entry(session, entry)
 
 
 @router.get("/{id}", response_model=TimeEntryPublic)
 def read_time_entry(session: SessionDep, current_user: CurrentUser, id: UUID) -> Any:
     entry = TimeEntryService.get_time_entry(session=session, time_entry_id=id)
-    task = session.get(Task, entry.task_id)
-    entry_dict = entry.model_dump()
-    entry_dict["task_title"] = task.title if task else "Unknown Task"
-    return TimeEntryPublic(**entry_dict)
+    return _enrich_entry(session, entry)
 
 
 @router.put("/{id}", response_model=TimeEntryPublic)
@@ -80,10 +80,7 @@ def update_time_entry(
         time_entry_id=id,
         time_entry_in=time_entry_in,
     )
-    task = session.get(Task, entry.task_id)
-    entry_dict = entry.model_dump()
-    entry_dict["task_title"] = task.title if task else "Unknown Task"
-    return TimeEntryPublic(**entry_dict)
+    return _enrich_entry(session, entry)
 
 
 @router.delete("/{id}", response_model=Message)
