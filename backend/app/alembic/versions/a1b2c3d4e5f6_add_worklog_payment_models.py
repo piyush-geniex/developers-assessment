@@ -1,7 +1,7 @@
 """Add worklog payment models
 
 Revision ID: a1b2c3d4e5f6
-Revises: d98dd8ec85a3
+Revises: 1a31ce608336
 Create Date: 2024-07-20 10:00:00.000000
 
 """
@@ -10,13 +10,15 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 revision = 'a1b2c3d4e5f6'
-down_revision = 'd98dd8ec85a3'
+down_revision = '1a31ce608336'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('user', sa.Column('role', sa.String(length=50), nullable=False, server_default='freelancer'))
+    userrole_enum = postgresql.ENUM('ADMIN', 'FREELANCER', name='userrole', create_type=True)
+    userrole_enum.create(op.get_bind())
+    op.add_column('user', sa.Column('role', userrole_enum, nullable=False, server_default='FREELANCER'))
     op.add_column('user', sa.Column('hourly_rate', sa.Float(), nullable=True))
 
     op.create_table(
@@ -46,13 +48,16 @@ def upgrade():
     op.create_index('ix_timeentry_freelancer_id', 'timeentry', ['freelancer_id'])
     op.create_index('ix_timeentry_start_time', 'timeentry', ['start_time'])
 
+    paymentbatchstatus_enum = postgresql.ENUM('DRAFT', 'CONFIRMED', name='paymentbatchstatus', create_type=True)
+    paymentbatchstatus_enum.create(op.get_bind())
+
     op.create_table(
         'paymentbatch',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('created_by_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('date_from', sa.DateTime(), nullable=False),
         sa.Column('date_to', sa.DateTime(), nullable=False),
-        sa.Column('status', sa.String(length=50), nullable=False, server_default='draft'),
+        sa.Column('status', paymentbatchstatus_enum, nullable=False, server_default='DRAFT'),
         sa.Column('total_amount', sa.Float(), nullable=False, server_default='0.0'),
         sa.Column('created_at', sa.DateTime(), nullable=False),
         sa.Column('confirmed_at', sa.DateTime(), nullable=True),
@@ -101,3 +106,6 @@ def downgrade():
 
     op.drop_column('user', 'hourly_rate')
     op.drop_column('user', 'role')
+
+    postgresql.ENUM(name='paymentbatchstatus').drop(op.get_bind())
+    postgresql.ENUM(name='userrole').drop(op.get_bind())

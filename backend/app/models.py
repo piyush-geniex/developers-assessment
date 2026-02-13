@@ -7,13 +7,13 @@ from sqlmodel import Field, Relationship, SQLModel
 
 
 class UserRole(str, Enum):
-    ADMIN = "admin"
-    FREELANCER = "freelancer"
+    ADMIN = "ADMIN"
+    FREELANCER = "FREELANCER"
 
 
 class PaymentBatchStatus(str, Enum):
-    DRAFT = "draft"
-    CONFIRMED = "confirmed"
+    DRAFT = "DRAFT"
+    CONFIRMED = "CONFIRMED"
 
 
 # Shared properties
