@@ -131,15 +131,37 @@ class NewPassword(SQLModel):
 
 
 # Task
-class Task(SQLModel, table=True):
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+class TaskBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None)
 
+
+class TaskCreate(TaskBase):
+    pass
+
+
+class TaskUpdate(SQLModel):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = None
+
+
+class Task(TaskBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     time_entries: list["TimeEntry"] = Relationship(back_populates="task", cascade_delete=True)
+
+
+class TaskPublic(TaskBase):
+    id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class TasksPublic(SQLModel):
+    data: list[TaskPublic]
+    count: int
 
 
 # TimeEntry
