@@ -206,6 +206,22 @@ class TimeEntriesPublic(SQLModel):
     count: int
 
 
+# Worklog
+class WorklogSummary(SQLModel):
+    task_id: uuid.UUID
+    task_title: str
+    freelancer_id: uuid.UUID
+    freelancer_name: str
+    total_hours: float
+    total_amount: float
+    entry_count: int
+
+
+class WorklogsSummary(SQLModel):
+    data: list[WorklogSummary]
+    count: int
+
+
 # PaymentBatch
 class PaymentBatch(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

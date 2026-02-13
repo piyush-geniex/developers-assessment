@@ -357,3 +357,25 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type WorklogSummary = {
+    task_id: string;
+    task_title: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    total_hours: number;
+    total_amount: number;
+    entry_count: number;
+};
+
+export type WorklogsSummary = {
+    data: Array<WorklogSummary>;
+    count: number;
+};
+
+export type WorklogsReadWorklogsSummaryData = {
+    dateFrom?: (string | null);
+    dateTo?: (string | null);
+};
+
+export type WorklogsReadWorklogsSummaryResponse = (WorklogsSummary);
