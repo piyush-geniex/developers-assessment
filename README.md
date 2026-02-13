@@ -1,4 +1,44 @@
 
+## Screenshots
+
+> **Demo Video:** [Watch the demo](https://drive.google.com/file/d/1Il2kJ_1rawPRbGsm7zVngJA9KOx9TrOo/view?usp=sharing)
+
+### 01. Dashboard
+![Dashboard](screenshots/01-dashboard.png)
+
+### 02. Worklogs List
+![Worklogs List](screenshots/02-worklogs-list.png)
+
+### 03. Worklogs Date Filter
+![Worklogs Date Filter](screenshots/03-worklogs-date-filter.png)
+
+### 04. Worklog Detail
+![Worklog Detail](screenshots/04-worklog-detail.png)
+
+### 05. Payments List Empty
+![Payments List Empty](screenshots/05-payments-list-empty.png)
+
+### 06. Payment New Step 1
+![Payment New Step 1](screenshots/06-payment-new-step1.png)
+
+### 07. Payment New Step 2 Review
+![Payment New Step 2 Review](screenshots/07-payment-new-step2-review.png)
+
+### 08. Payment New Step 3 Confirm
+![Payment New Step 3 Confirm](screenshots/08-payment-new-step3-confirm.png)
+
+### 09. Payment Detail Draft
+![Payment Detail Draft](screenshots/09-payment-detail-draft.png)
+
+### 10. Payment Detail Confirmed
+![Payment Detail Confirmed](screenshots/10-payment-detail-confirmed.png)
+
+### 11. Payments List With Data
+![Payments List With Data](screenshots/11-payments-list-with-data.png)
+
+### 12. Worklogs Paid Status
+![Worklogs Paid Status](screenshots/12-worklogs-paid-status.png)
+
 # Developer Assessment 
 
 Thank you for your interest in a developer role at **genieX** - we’re excited to learn more about you. Please refer to the appropriate assessment file based on your role:
@@ -23,6 +63,15 @@ To submit your assessment, please follow these steps:
 
 4. **Include Required Documentation**
    - Add your name and email id to the PR description so we can identify you
+
+---
+
+## Submission Checklist
+
+- [x] Working backend APIs implementing the required functionality
+- [x] Functional frontend implementing the workflows above
+- [x] Added screenshots of relevant screens
+- [x] Created Pull Request
 
 ---
 
