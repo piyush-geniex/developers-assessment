@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { type UserCreate, UsersService } from "@/client"
+import { DEFAULT_ROLE, ROLE_LABELS, USER_ROLES } from "@/constants"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -28,6 +29,13 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoadingButton } from "@/components/ui/loading-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useCustomToast from "@/hooks/useCustomToast"
 import { handleError } from "@/utils"
 
@@ -42,6 +50,8 @@ const formSchema = z
     confirm_password: z
       .string()
       .min(1, { message: "Please confirm your password" }),
+    role: z.enum(USER_ROLES),
+    hourly_rate: z.number().min(0).optional().nullable(),
     is_superuser: z.boolean(),
     is_active: z.boolean(),
   })
@@ -66,6 +76,8 @@ const AddUser = () => {
       full_name: "",
       password: "",
       confirm_password: "",
+      role: DEFAULT_ROLE,
+      hourly_rate: null,
       is_superuser: false,
       is_active: false,
     },
@@ -141,6 +153,54 @@ const AddUser = () => {
                   </FormItem>
                 )}
               />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {USER_ROLES.map((r) => (
+                            <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="hourly_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hourly Rate ($)</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="0.00"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) =>
+                            field.onChange(e.target.value === "" ? null : parseFloat(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

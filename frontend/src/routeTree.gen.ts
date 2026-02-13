@@ -15,9 +15,13 @@ import { Route as RecoverPasswordRouteImport } from './routes/recover-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout/index'
+import { Route as LayoutWorklogsRouteImport } from './routes/_layout/worklogs'
+import { Route as LayoutTimeEntriesRouteImport } from './routes/_layout/time-entries'
+import { Route as LayoutTasksRouteImport } from './routes/_layout/tasks'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout/settings'
 import { Route as LayoutItemsRouteImport } from './routes/_layout/items'
 import { Route as LayoutAdminRouteImport } from './routes/_layout/admin'
+import { Route as LayoutPaymentsRouteImport } from './routes/_layout/payments'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -48,6 +52,21 @@ const LayoutIndexRoute = LayoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutWorklogsRoute = LayoutWorklogsRouteImport.update({
+  id: '/worklogs',
+  path: '/worklogs',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutTimeEntriesRoute = LayoutTimeEntriesRouteImport.update({
+  id: '/time-entries',
+  path: '/time-entries',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutTasksRoute = LayoutTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => LayoutRoute,
+} as any)
 const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -63,6 +82,11 @@ const LayoutAdminRoute = LayoutAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => LayoutRoute,
 } as any)
+const LayoutPaymentsRoute = LayoutPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => LayoutRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
@@ -71,7 +95,11 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
+  '/payments': typeof LayoutPaymentsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/tasks': typeof LayoutTasksRoute
+  '/time-entries': typeof LayoutTimeEntriesRoute
+  '/worklogs': typeof LayoutWorklogsRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesByTo {
@@ -81,7 +109,11 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/admin': typeof LayoutAdminRoute
   '/items': typeof LayoutItemsRoute
+  '/payments': typeof LayoutPaymentsRoute
   '/settings': typeof LayoutSettingsRoute
+  '/tasks': typeof LayoutTasksRoute
+  '/time-entries': typeof LayoutTimeEntriesRoute
+  '/worklogs': typeof LayoutWorklogsRoute
   '/': typeof LayoutIndexRoute
 }
 export interface FileRoutesById {
@@ -93,7 +125,11 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/_layout/admin': typeof LayoutAdminRoute
   '/_layout/items': typeof LayoutItemsRoute
+  '/_layout/payments': typeof LayoutPaymentsRoute
   '/_layout/settings': typeof LayoutSettingsRoute
+  '/_layout/tasks': typeof LayoutTasksRoute
+  '/_layout/time-entries': typeof LayoutTimeEntriesRoute
+  '/_layout/worklogs': typeof LayoutWorklogsRoute
   '/_layout/': typeof LayoutIndexRoute
 }
 export interface FileRouteTypes {
@@ -105,7 +141,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
+    | '/payments'
     | '/settings'
+    | '/tasks'
+    | '/time-entries'
+    | '/worklogs'
     | '/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -115,7 +155,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/admin'
     | '/items'
+    | '/payments'
     | '/settings'
+    | '/tasks'
+    | '/time-entries'
+    | '/worklogs'
     | '/'
   id:
     | '__root__'
@@ -126,7 +170,11 @@ export interface FileRouteTypes {
     | '/signup'
     | '/_layout/admin'
     | '/_layout/items'
+    | '/_layout/payments'
     | '/_layout/settings'
+    | '/_layout/tasks'
+    | '/_layout/time-entries'
+    | '/_layout/worklogs'
     | '/_layout/'
   fileRoutesById: FileRoutesById
 }
@@ -182,6 +230,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/time-entries': {
+      id: '/_layout/time-entries'
+      path: '/time-entries'
+      fullPath: '/time-entries'
+      preLoaderRoute: typeof LayoutTimeEntriesRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/worklogs': {
+      id: '/_layout/worklogs'
+      path: '/worklogs'
+      fullPath: '/worklogs'
+      preLoaderRoute: typeof LayoutWorklogsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/tasks': {
+      id: '/_layout/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof LayoutTasksRouteImport
+      parentRoute: typeof LayoutRoute
+    }
     '/_layout/settings': {
       id: '/_layout/settings'
       path: '/settings'
@@ -203,20 +272,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAdminRouteImport
       parentRoute: typeof LayoutRoute
     }
+    '/_layout/payments': {
+      id: '/_layout/payments'
+      path: '/payments'
+      fullPath: '/payments'
+      preLoaderRoute: typeof LayoutPaymentsRouteImport
+      parentRoute: typeof LayoutRoute
+    }
   }
 }
 
 interface LayoutRouteChildren {
   LayoutAdminRoute: typeof LayoutAdminRoute
   LayoutItemsRoute: typeof LayoutItemsRoute
+  LayoutPaymentsRoute: typeof LayoutPaymentsRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
+  LayoutTasksRoute: typeof LayoutTasksRoute
+  LayoutTimeEntriesRoute: typeof LayoutTimeEntriesRoute
+  LayoutWorklogsRoute: typeof LayoutWorklogsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutAdminRoute: LayoutAdminRoute,
   LayoutItemsRoute: LayoutItemsRoute,
+  LayoutPaymentsRoute: LayoutPaymentsRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
+  LayoutTasksRoute: LayoutTasksRoute,
+  LayoutTimeEntriesRoute: LayoutTimeEntriesRoute,
+  LayoutWorklogsRoute: LayoutWorklogsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
 }
 

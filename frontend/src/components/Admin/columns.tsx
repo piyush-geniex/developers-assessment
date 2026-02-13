@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table"
 
 import type { UserPublic } from "@/client"
 import { Badge } from "@/components/ui/badge"
+import { ROLE_LABELS } from "@/constants"
 import { cn } from "@/lib/utils"
 import { UserActionsMenu } from "./UserActionsMenu"
 
@@ -39,13 +40,26 @@ export const columns: ColumnDef<UserTableData>[] = [
     ),
   },
   {
-    accessorKey: "is_superuser",
+    accessorKey: "role",
     header: "Role",
-    cell: ({ row }) => (
-      <Badge variant={row.original.is_superuser ? "default" : "secondary"}>
-        {row.original.is_superuser ? "Superuser" : "User"}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+      const role = row.original.role
+      return (
+        <Badge variant={row.original.is_superuser ? "default" : role === "ADMIN" ? "secondary" : "outline"}>
+          {row.original.is_superuser ? "Superuser" : (role ? ROLE_LABELS[role] : "Freelancer")}
+        </Badge>
+      )
+    },
+  },
+  {
+    accessorKey: "hourly_rate",
+    header: "Hourly Rate",
+    cell: ({ row }) => {
+      const rate = row.original.hourly_rate
+      return rate != null
+        ? <span className="tabular-nums">${rate.toFixed(2)}/h</span>
+        : <span className="text-muted-foreground">—</span>
+    },
   },
   {
     accessorKey: "is_active",

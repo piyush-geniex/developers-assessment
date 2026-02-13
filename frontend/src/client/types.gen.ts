@@ -51,6 +51,60 @@ export type PrivateUserCreate = {
     is_verified?: boolean;
 };
 
+export type TaskCreate = {
+    title: string;
+    description?: (string | null);
+};
+
+export type TaskPublic = {
+    title: string;
+    description?: (string | null);
+    id: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export type TasksPublic = {
+    data: Array<TaskPublic>;
+    count: number;
+};
+
+export type TaskUpdate = {
+    title?: (string | null);
+    description?: (string | null);
+};
+
+export type TimeEntriesPublic = {
+    data: Array<TimeEntryPublic>;
+    count: number;
+};
+
+export type TimeEntryCreate = {
+    task_id: string;
+    start_time: string;
+    end_time: string;
+    description?: (string | null);
+};
+
+export type TimeEntryPublic = {
+    task_id: string;
+    start_time: string;
+    end_time: string;
+    description?: (string | null);
+    id: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    created_at: string;
+    task_title: string;
+};
+
+export type TimeEntryUpdate = {
+    task_id?: (string | null);
+    start_time?: (string | null);
+    end_time?: (string | null);
+    description?: (string | null);
+};
+
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -66,6 +120,8 @@ export type UserCreate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    role?: UserRole;
+    hourly_rate?: (number | null);
     password: string;
 };
 
@@ -74,6 +130,8 @@ export type UserPublic = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    role?: UserRole;
+    hourly_rate?: (number | null);
     id: string;
 };
 
@@ -82,6 +140,8 @@ export type UserRegister = {
     password: string;
     full_name?: (string | null);
 };
+
+export type UserRole = 'ADMIN' | 'FREELANCER';
 
 export type UsersPublic = {
     data: Array<UserPublic>;
@@ -93,6 +153,8 @@ export type UserUpdate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    role?: UserRole;
+    hourly_rate?: (number | null);
     password?: (string | null);
 };
 
@@ -106,6 +168,78 @@ export type ValidationError = {
     msg: string;
     type: string;
 };
+
+export type PaymentBatchStatus = 'DRAFT' | 'CONFIRMED';
+
+export type PaymentBatchCreate = {
+    date_from: string;
+    date_to: string;
+};
+
+export type PaymentBatchPublic = {
+    id: string;
+    created_by_id: string;
+    date_from: string;
+    date_to: string;
+    status: PaymentBatchStatus;
+    total_amount: number;
+    created_at: string;
+    confirmed_at: (string | null);
+};
+
+export type PaymentBatchesPublic = {
+    data: Array<PaymentBatchPublic>;
+    count: number;
+};
+
+export type EligibleTimeEntry = {
+    time_entry_id: string;
+    task_id: string;
+    task_title: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    start_time: string;
+    end_time: string;
+    hours: number;
+    hourly_rate: number;
+    amount: number;
+};
+
+export type PaymentBatchDetail = {
+    batch: PaymentBatchPublic;
+    eligible_entries: Array<EligibleTimeEntry>;
+};
+
+export type PaymentPublic = {
+    id: string;
+    batch_id: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    time_entry_id: string;
+    task_title: string;
+    hours: number;
+    hourly_rate: number;
+    amount: number;
+    created_at: string;
+};
+
+export type PaymentsPublic = {
+    data: Array<PaymentPublic>;
+    count: number;
+};
+
+export type PaymentsReadBatchesData = { skip?: number; limit?: number };
+export type PaymentsReadBatchesResponse = PaymentBatchesPublic;
+export type PaymentsCreateBatchData = { requestBody: PaymentBatchCreate };
+export type PaymentsCreateBatchResponse = PaymentBatchDetail;
+export type PaymentsReadBatchData = { batchId: string };
+export type PaymentsReadBatchResponse = PaymentBatchDetail;
+export type PaymentsReadBatchPaymentsData = { batchId: string };
+export type PaymentsReadBatchPaymentsResponse = PaymentsPublic;
+export type PaymentsConfirmBatchData = { batchId: string; requestBody: Array<string> };
+export type PaymentsConfirmBatchResponse = PaymentBatchPublic;
+export type PaymentsDeleteBatchData = { batchId: string };
+export type PaymentsDeleteBatchResponse = unknown;
 
 export type ItemsReadItemsData = {
     limit?: number;
@@ -171,6 +305,70 @@ export type PrivateCreateUserData = {
 
 export type PrivateCreateUserResponse = (UserPublic);
 
+export type TasksReadTasksData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type TasksReadTasksResponse = (TasksPublic);
+
+export type TasksCreateTaskData = {
+    requestBody: TaskCreate;
+};
+
+export type TasksCreateTaskResponse = (TaskPublic);
+
+export type TasksReadTaskData = {
+    id: string;
+};
+
+export type TasksReadTaskResponse = (TaskPublic);
+
+export type TasksUpdateTaskData = {
+    id: string;
+    requestBody: TaskUpdate;
+};
+
+export type TasksUpdateTaskResponse = (TaskPublic);
+
+export type TasksDeleteTaskData = {
+    id: string;
+};
+
+export type TasksDeleteTaskResponse = (Message);
+
+export type TimeEntriesReadTimeEntriesData = {
+    limit?: number;
+    skip?: number;
+};
+
+export type TimeEntriesReadTimeEntriesResponse = (TimeEntriesPublic);
+
+export type TimeEntriesCreateTimeEntryData = {
+    requestBody: TimeEntryCreate;
+};
+
+export type TimeEntriesCreateTimeEntryResponse = (TimeEntryPublic);
+
+export type TimeEntriesReadTimeEntryData = {
+    id: string;
+};
+
+export type TimeEntriesReadTimeEntryResponse = (TimeEntryPublic);
+
+export type TimeEntriesUpdateTimeEntryData = {
+    id: string;
+    requestBody: TimeEntryUpdate;
+};
+
+export type TimeEntriesUpdateTimeEntryResponse = (TimeEntryPublic);
+
+export type TimeEntriesDeleteTimeEntryData = {
+    id: string;
+};
+
+export type TimeEntriesDeleteTimeEntryResponse = (Message);
+
 export type UsersReadUsersData = {
     limit?: number;
     skip?: number;
@@ -232,3 +430,26 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type WorklogSummary = {
+    task_id: string;
+    task_title: string;
+    freelancer_id: string;
+    freelancer_name: string;
+    total_hours: number;
+    total_amount: number;
+    entry_count: number;
+};
+
+export type WorklogsSummary = {
+    data: Array<WorklogSummary>;
+    count: number;
+};
+
+export type WorklogsReadWorklogsSummaryData = {
+    dateFrom?: (string | null);
+    dateTo?: (string | null);
+    freelancerId?: (string | null);
+};
+
+export type WorklogsReadWorklogsSummaryResponse = (WorklogsSummary);

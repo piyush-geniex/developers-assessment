@@ -239,6 +239,277 @@ export const PrivateUserCreateSchema = {
     title: 'PrivateUserCreate'
 } as const;
 
+export const TaskCreateSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            maxLength: 255,
+            minLength: 1,
+            title: 'Title'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['title'],
+    title: 'TaskCreate'
+} as const;
+
+export const TaskPublicSchema = {
+    properties: {
+        title: {
+            type: 'string',
+            maxLength: 255,
+            minLength: 1,
+            title: 'Title'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated At'
+        }
+    },
+    type: 'object',
+    required: ['title', 'id', 'created_at', 'updated_at'],
+    title: 'TaskPublic'
+} as const;
+
+export const TaskUpdateSchema = {
+    properties: {
+        title: {
+            anyOf: [
+                {
+                    type: 'string',
+                    maxLength: 255,
+                    minLength: 1
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Title'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    title: 'TaskUpdate'
+} as const;
+
+export const TasksPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/TaskPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'TasksPublic'
+} as const;
+
+export const TimeEntriesPublicSchema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/TimeEntryPublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        count: {
+            type: 'integer',
+            title: 'Count'
+        }
+    },
+    type: 'object',
+    required: ['data', 'count'],
+    title: 'TimeEntriesPublic'
+} as const;
+
+export const TimeEntryCreateSchema = {
+    properties: {
+        task_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Task Id'
+        },
+        start_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Start Time'
+        },
+        end_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'End Time'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['task_id', 'start_time', 'end_time'],
+    title: 'TimeEntryCreate'
+} as const;
+
+export const TimeEntryPublicSchema = {
+    properties: {
+        task_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Task Id'
+        },
+        start_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Start Time'
+        },
+        end_time: {
+            type: 'string',
+            format: 'date-time',
+            title: 'End Time'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        freelancer_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Freelancer Id'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        }
+    },
+    type: 'object',
+    required: ['task_id', 'start_time', 'end_time', 'id', 'freelancer_id', 'created_at'],
+    title: 'TimeEntryPublic'
+} as const;
+
+export const TimeEntryUpdateSchema = {
+    properties: {
+        task_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Task Id'
+        },
+        start_time: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Time'
+        },
+        end_time: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'End Time'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    title: 'TimeEntryUpdate'
+} as const;
+
 export const TokenSchema = {
     properties: {
         access_token: {
@@ -306,6 +577,21 @@ export const UserCreateSchema = {
             ],
             title: 'Full Name'
         },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'freelancer'
+        },
+        hourly_rate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hourly Rate'
+        },
         password: {
             type: 'string',
             maxLength: 128,
@@ -347,6 +633,21 @@ export const UserPublicSchema = {
                 }
             ],
             title: 'Full Name'
+        },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'freelancer'
+        },
+        hourly_rate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hourly Rate'
         },
         id: {
             type: 'string',
@@ -391,6 +692,12 @@ export const UserRegisterSchema = {
     title: 'UserRegister'
 } as const;
 
+export const UserRoleSchema = {
+    type: 'string',
+    enum: ['admin', 'freelancer'],
+    title: 'UserRole'
+} as const;
+
 export const UserUpdateSchema = {
     properties: {
         email: {
@@ -427,6 +734,21 @@ export const UserUpdateSchema = {
                 }
             ],
             title: 'Full Name'
+        },
+        role: {
+            '$ref': '#/components/schemas/UserRole',
+            default: 'freelancer'
+        },
+        hourly_rate: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Hourly Rate'
         },
         password: {
             anyOf: [
