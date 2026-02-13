@@ -3,6 +3,7 @@ from sqlmodel import Session, create_engine, select
 from app import crud
 from app.core.config import settings
 from app.models import User, UserCreate
+from app.worklog import models as worklog_models  # noqa: F401 - Import to register models
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
