@@ -66,11 +66,11 @@ b. **Sample API Responses**
 
 ### Submission Checklist
 
-- [ ] Forked the repository
-- [ ] Implemented both required endpoints
-- [ ] Added DBML diagram of your database schema
-- [ ] Added JSON file with sample responses from both endpoints
-- [ ] Created Pull Request
+- [x] Forked the repository
+- [x] Implemented both required endpoints
+- [x] Added DBML diagram of your database schema
+- [x] Added JSON file with sample responses from both endpoints
+- [x] Created Pull Request
 
 ---
 

@@ -1,0 +1,110 @@
+Table user {
+  id uuid [pk]
+  email varchar(255) [not null, unique]
+  is_active boolean [not null]
+  is_superuser boolean [not null]
+  full_name varchar
+  hashed_password varchar [not null]
+
+  indexes {
+    (email) [unique]
+  }
+}
+
+Table item {
+  id uuid [pk]
+  owner_id uuid [not null, ref: > user.id]
+  title varchar(255) [not null]
+  description varchar(255)
+}
+
+Table worklog {
+  id bigint [pk, increment]
+  user_id uuid [not null, ref: > user.id]
+  task_ref varchar(255) [not null]
+  created_at timestamp [not null]
+
+  indexes {
+    (user_id)
+    (task_ref)
+    (created_at)
+  }
+}
+
+Table worklog_entry {
+  id bigint [pk, increment]
+  worklog_id bigint [not null, ref: > worklog.id]
+  entry_type varchar(32) [not null]
+  hours decimal(12,2)
+  rate decimal(12,2)
+  amount_signed decimal(14,2) [not null]
+  reason varchar(255)
+  occurred_at timestamp [not null]
+  created_at timestamp [not null]
+
+  indexes {
+    (worklog_id)
+    (entry_type)
+    (created_at)
+  }
+}
+
+Table settlement_run {
+  id bigint [pk, increment]
+  idempotency_key varchar(128) [not null, unique]
+  status varchar(32) [not null]
+  period_from date [not null]
+  period_to date [not null]
+  started_at timestamp [not null]
+  finished_at timestamp
+  meta_json json
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (idempotency_key) [unique]
+    (status)
+    (period_from)
+    (period_to)
+    (created_at)
+    (updated_at)
+  }
+}
+
+Table remittance {
+  id bigint [pk, increment]
+  run_id bigint [not null, ref: > settlement_run.id]
+  user_id uuid [not null, ref: > user.id]
+  status varchar(32) [not null]
+  total_amount decimal(14,2) [not null]
+  currency varchar(3) [not null]
+  idempotency_key varchar(128) [not null]
+  failure_reason varchar(255)
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+
+  indexes {
+    (user_id, idempotency_key) [unique]
+    (run_id)
+    (user_id)
+    (status)
+    (idempotency_key)
+    (created_at)
+    (updated_at)
+  }
+}
+
+Table remittance_line {
+  id bigint [pk, increment]
+  remittance_id bigint [not null, ref: > remittance.id]
+  worklog_id bigint [not null, ref: > worklog.id]
+  amount decimal(14,2) [not null]
+  snapshot_note varchar(255)
+  created_at timestamp [not null]
+
+  indexes {
+    (remittance_id)
+    (worklog_id)
+    (created_at)
+  }
+}
