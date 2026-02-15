@@ -1,0 +1,49 @@
+{
+  "generate-remittances-for-all-users": {
+    "request": {
+      "from_date": "2026-01-01",
+      "to_date": "2026-01-31",
+      "idempotency_key": "sample_run_001"
+    },
+    "headers": {
+      "X-Payout-Mode": "success"
+    },
+    "response": {
+      "run_id": 1,
+      "run_status": "COMPLETED",
+      "idempotency_key": "sample_run_001",
+      "remitted_count": 1,
+      "failed_count": 0,
+      "cancelled_count": 0,
+      "skipped_negative_count": 0,
+      "results": [
+        {
+          "user_id": "f91b60ab-c303-4704-91f6-75e8972cef28",
+          "remittance_id": 1,
+          "status": "REMITTED",
+          "amount": "120.00",
+          "message": "ok"
+        }
+      ]
+    }
+  },
+  "list-all-worklogs": {
+    "request": {
+      "remittanceStatus": "UNREMITTED"
+    },
+    "response": {
+      "data": [
+        {
+          "worklog_id": 2,
+          "user_id": "f91b60ab-c303-4704-91f6-75e8972cef28",
+          "task_ref": "sample-task-2",
+          "gross_amount": "50.00",
+          "remitted_amount": "0.00",
+          "unremitted_amount": "50.00",
+          "remittance_status": "UNREMITTED"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
