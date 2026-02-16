@@ -80,14 +80,13 @@ services:
           action: rebuild
     # TODO: remove once coverage is done locally
     volumes:
+      - ./backend/app:/app/backend/app
       - ./backend/htmlcov:/app/backend/htmlcov
     environment:
       SMTP_HOST: "mailcatcher"
       SMTP_PORT: "1025"
       SMTP_TLS: "false"
       EMAILS_FROM_EMAIL: "noreply@example.com"
-
-
 
   frontend:
     restart: "no"
@@ -98,8 +97,6 @@ services:
       args:
         - VITE_API_URL=http://localhost:8000
         - NODE_ENV=development
-
-  
 
 networks:
   traefik-public:
