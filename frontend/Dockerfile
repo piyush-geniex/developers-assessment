@@ -11,6 +11,7 @@ COPY ./ /app/
 
 ARG VITE_API_URL=${VITE_API_URL}
 
+# The build script will handle route tree generation
 RUN npm run build
 
 
