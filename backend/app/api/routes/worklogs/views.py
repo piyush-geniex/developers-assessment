@@ -94,6 +94,23 @@ def confirm_payment_batch(
     return WorkLogService.confirm_payment_batch(session, current_user, id)
 
 
+@router.delete(
+    "/payment-batch/{batch_id}/payments/{payment_id}", response_model=dict[str, str]
+)
+def delete_payment_from_batch(
+    session: SessionDep,
+    current_user: CurrentUser,
+    batch_id: uuid.UUID,
+    payment_id: uuid.UUID,
+) -> Any:
+    """
+    Delete a payment from a payment batch.
+    """
+    return WorkLogService.delete_payment_from_batch(
+        session, current_user, batch_id, payment_id
+    )
+
+
 @router.post("/tasks", response_model=TaskPublic)
 def create_task(
     *, session: SessionDep, current_user: CurrentUser, task_in: TaskCreate

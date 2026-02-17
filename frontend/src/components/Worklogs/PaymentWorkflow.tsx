@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Calendar, DollarSign, CheckCircle2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Calendar, DollarSign, CheckCircle2, X } from "lucide-react"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
 import {
@@ -82,9 +82,15 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
     baseURL: "http://localhost:8000",
   })
 
+  // Auto-load worklogs when dates are selected
+  useEffect(() => {
+    if (startDate && endDate && !batch) {
+      loadEligibleWorklogs()
+    }
+  }, [startDate, endDate])
+
   const loadEligibleWorklogs = async () => {
     if (!startDate || !endDate) {
-      toast.error("Please select both start and end dates")
       return
     }
 
@@ -141,6 +147,37 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
       toast.error(error.response?.data?.detail || "Failed to create payment batch")
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  const handleRemovePayment = async (paymentId: string) => {
+    if (!batch) return
+
+    try {
+      const token = localStorage.getItem("access_token")
+      await axiosInstance.delete(
+        `http://localhost:8000/api/v1/worklogs/payment-batch/${batch.id}/payments/${paymentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      // Update local batch state
+      const remainingPayments = batch.payments.filter((p) => p.id !== paymentId)
+      const newTotal = remainingPayments.reduce((sum, p) => sum + p.amount, 0)
+
+      setBatch({
+        ...batch,
+        payments: remainingPayments,
+        total_amount: newTotal,
+        payment_count: remainingPayments.length,
+      })
+
+      toast.success("Payment removed from batch")
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || "Failed to remove payment")
     }
   }
 
@@ -235,20 +272,17 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
           </div>
           <div className="flex gap-2 mt-4">
             <Button
-              onClick={loadEligibleWorklogs}
-              disabled={isLoadingWorklogs || !startDate || !endDate}
-              variant="outline"
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              {isLoadingWorklogs ? "Loading..." : "Preview Worklogs"}
-            </Button>
-            <Button
               onClick={handleCreateBatch}
-              disabled={isCreating || !startDate || !endDate}
+              disabled={isCreating || !startDate || !endDate || isLoadingWorklogs}
             >
               <Calendar className="mr-2 h-4 w-4" />
               {isCreating ? "Creating..." : "Create Payment Batch"}
             </Button>
+            {isLoadingWorklogs && (
+              <span className="text-sm text-muted-foreground flex items-center">
+                Loading eligible worklogs...
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -258,54 +292,100 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
           <CardHeader>
             <CardTitle>Eligible Worklogs</CardTitle>
             <CardDescription>
-              Select worklogs or freelancers to exclude from the payment batch
+              Uncheck worklogs or freelancers to exclude them from the payment batch
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 p-3 bg-muted rounded-md">
+              <div className="text-sm space-y-1">
+                <div className="flex items-center justify-between">
+                  <span>Total Eligible Worklogs:</span>
+                  <span className="font-medium">{eligibleWorklogs.length}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Excluded Worklogs:</span>
+                  <span className="font-medium text-destructive">
+                    {excludedWorklogIds.size}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Excluded Freelancers:</span>
+                  <span className="font-medium text-destructive">
+                    {excludedFreelancerIds.size}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <span className="font-semibold">Will be included:</span>
+                  <span className="font-semibold text-green-600">
+                    {eligibleWorklogs.filter(
+                      (wl) =>
+                        !excludedWorklogIds.has(wl.id) &&
+                        !excludedFreelancerIds.has(wl.freelancer_id)
+                    ).length}
+                  </span>
+                </div>
+              </div>
+            </div>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12"></TableHead>
+                    <TableHead className="w-12">Include</TableHead>
                     <TableHead>Task</TableHead>
                     <TableHead>Freelancer</TableHead>
                     <TableHead className="text-right">Earnings</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {eligibleWorklogs.map((worklog) => (
-                    <TableRow key={worklog.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={!excludedWorklogIds.has(worklog.id)}
-                          onCheckedChange={() =>
-                            toggleWorklogExclusion(worklog.id)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {worklog.task?.title || "Unknown"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
+                  {eligibleWorklogs.map((worklog) => {
+                    const isWorklogExcluded = excludedWorklogIds.has(worklog.id)
+                    const isFreelancerExcluded = excludedFreelancerIds.has(
+                      worklog.freelancer_id
+                    )
+                    const isExcluded = isWorklogExcluded || isFreelancerExcluded
+
+                    return (
+                      <TableRow
+                        key={worklog.id}
+                        className={isExcluded ? "opacity-50 bg-muted/50" : ""}
+                      >
+                        <TableCell>
                           <Checkbox
-                            checked={!excludedFreelancerIds.has(worklog.freelancer_id)}
+                            checked={!isWorklogExcluded}
                             onCheckedChange={() =>
-                              toggleFreelancerExclusion(worklog.freelancer_id)
+                              toggleWorklogExclusion(worklog.id)
                             }
                           />
-                          <span>
-                            {worklog.freelancer?.full_name ||
-                              worklog.freelancer?.email ||
-                              "Unknown"}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        ${worklog.total_earnings?.toFixed(2) || "0.00"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {worklog.task?.title || "Unknown"}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              checked={!isFreelancerExcluded}
+                              onCheckedChange={() =>
+                                toggleFreelancerExclusion(worklog.freelancer_id)
+                              }
+                            />
+                            <span>
+                              {worklog.freelancer?.full_name ||
+                                worklog.freelancer?.email ||
+                                "Unknown"}
+                            </span>
+                            {isFreelancerExcluded && (
+                              <span className="text-xs text-destructive">
+                                (excluded)
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          ${worklog.total_earnings?.toFixed(2) || "0.00"}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -326,7 +406,7 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
                 </div>
                 <div className="flex items-center gap-2 text-lg font-semibold">
                   <DollarSign className="h-5 w-5" />
-                  Total: {batch.total_amount.toFixed(2)}
+                  Total: ${batch.total_amount.toFixed(2)}
                 </div>
               </div>
             </CardHeader>
@@ -338,6 +418,7 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
                       <TableHead>Task</TableHead>
                       <TableHead>Freelancer</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -353,6 +434,16 @@ export function PaymentWorkflow({ onPaymentComplete }: PaymentWorkflowProps) {
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           ${payment.amount.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemovePayment(payment.id)}
+                            className="h-8 w-8 p-0 hover:bg-destructive/10"
+                          >
+                            <X className="h-4 w-4 text-destructive" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}

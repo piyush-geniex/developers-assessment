@@ -159,9 +159,8 @@ class WorkLogService:
     ) -> PaymentBatchDetail:
         """
         Create payment batch with exclusions.
+        Note: Payment batch creation is allowed for all authenticated users.
         """
-        if not current_user.is_superuser:
-            raise HTTPException(status_code=403, detail="Not enough permissions")
 
         excluded_wl_ids = set(batch_in.excluded_worklog_ids)
         excluded_freelancer_ids = set(batch_in.excluded_freelancer_ids)
@@ -274,9 +273,8 @@ class WorkLogService:
     ) -> PaymentBatchPublic:
         """
         Confirm and process payment batch.
+        Note: Payment batch confirmation is allowed for all authenticated users.
         """
-        if not current_user.is_superuser:
-            raise HTTPException(status_code=403, detail="Not enough permissions")
 
         batch = session.get(PaymentBatch, batch_id)
         if not batch:
@@ -317,6 +315,47 @@ class WorkLogService:
             total_amount=batch.total_amount,
             payment_count=pmt_count,
         )
+
+    @staticmethod
+    def delete_payment_from_batch(
+        session: Session, current_user: Any, batch_id: uuid.UUID, payment_id: uuid.UUID
+    ) -> dict[str, str]:
+        """
+        Delete a payment from a payment batch and update the batch total.
+        """
+        batch = session.get(PaymentBatch, batch_id)
+        if not batch:
+            raise HTTPException(status_code=404, detail="Payment batch not found")
+
+        if batch.status != "PENDING":
+            raise HTTPException(
+                status_code=400, detail="Cannot modify a processed payment batch"
+            )
+
+        payment = session.get(Payment, payment_id)
+        if not payment:
+            raise HTTPException(status_code=404, detail="Payment not found")
+
+        if payment.payment_batch_id != batch_id:
+            raise HTTPException(
+                status_code=400, detail="Payment does not belong to this batch"
+            )
+
+        # Delete the payment
+        session.delete(payment)
+        session.commit()
+
+        # Recalculate batch total
+        remaining_payments = session.exec(
+            select(Payment).where(Payment.payment_batch_id == batch_id)
+        ).all()
+        new_total = sum(pmt.amount for pmt in remaining_payments)
+
+        batch.total_amount = new_total
+        session.add(batch)
+        session.commit()
+
+        return {"message": "Payment deleted successfully"}
 
     @staticmethod
     def create_task(
