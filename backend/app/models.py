@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
@@ -111,3 +112,48 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class Task(SQLModel, table=True):
+    __tablename__ = "task"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(max_length=255, index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class PaymentBatch(SQLModel, table=True):
+    __tablename__ = "payment_batch"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    total_amount: float = Field(default=0.0)
+    worklog_count: int = Field(default=0)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    worklogs: list["Worklog"] = Relationship(back_populates="payment_batch")
+
+
+class Worklog(SQLModel, table=True):
+    __tablename__ = "worklog"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    task_id: uuid.UUID = Field(foreign_key="task.id", index=True)
+    owner_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    amount_earned: float = Field(default=0.0)
+    status: str = Field(default="pending", max_length=64, index=True)
+    payment_batch_id: uuid.UUID | None = Field(
+        default=None, foreign_key="payment_batch.id", index=True
+    )
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    task: Task | None = Relationship()
+    owner: User | None = Relationship()
+    payment_batch: PaymentBatch | None = Relationship(back_populates="worklogs")
+    time_entries: list["TimeEntry"] = Relationship(back_populates="worklog", cascade_delete=True)
+
+
+class TimeEntry(SQLModel, table=True):
+    __tablename__ = "time_entry"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    worklog_id: uuid.UUID = Field(foreign_key="worklog.id", index=True)
+    description: str | None = Field(default=None, max_length=1024)
+    hours: float = Field()
+    rate: float = Field()
+    amount: float = Field()
+    logged_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    worklog: Worklog | None = Relationship(back_populates="time_entries")
