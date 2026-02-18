@@ -1,7 +1,8 @@
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx import ASGITransport, AsyncClient
 from sqlmodel import Session, delete
 
 from app.core.config import settings
@@ -40,3 +41,28 @@ def normal_user_token_headers(client: TestClient, db: Session) -> dict[str, str]
     return authentication_token_from_email(
         client=client, email=settings.EMAIL_TEST_USER, db=db
     )
+
+
+@pytest.fixture
+async def async_client() -> AsyncGenerator[AsyncClient, None]:
+    async with AsyncClient(
+        transport=ASGITransport(app=app),
+        base_url="http://test",
+    ) as ac:
+        yield ac
+
+
+@pytest.fixture
+async def async_superuser_token_headers(
+    async_client: AsyncClient,
+) -> dict[str, str]:
+    r = await async_client.post(
+        f"{settings.API_V1_STR}/login/access-token",
+        data={
+            "username": settings.FIRST_SUPERUSER,
+            "password": settings.FIRST_SUPERUSER_PASSWORD,
+        },
+    )
+    data = r.json()
+    token = data["access_token"]
+    return {"Authorization": f"Bearer {token}"}

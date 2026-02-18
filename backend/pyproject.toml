@@ -19,13 +19,25 @@ dependencies = [
     # Pin bcrypt until passlib supports the latest
     "bcrypt==4.3.0",
     "pydantic-settings<3.0.0,>=2.2.1",
-    "sentry-sdk[fastapi]<2.0.0,>=1.40.6",
+    "sentry-sdk[fastapi]>=1.40.6",
     "pyjwt<3.0.0,>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3,<8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "mypy>=1.8.0,<2.0.0",
+    "ruff>=0.2.2,<1.0.0",
+    "prek>=0.2.24,<1.0.0",
+    "types-passlib>=1.7.7.20240106,<2.0.0.0",
+    "coverage>=7.4.3,<8.0.0",
 ]
 
 [dependency-groups]
 dev = [
     "pytest<8.0.0,>=7.4.3",
+    "pytest-asyncio>=0.23.0",
     "mypy<2.0.0,>=1.8.0",
     "ruff<1.0.0,>=0.2.2",
     "prek>=0.2.24,<1.0.0",
@@ -78,3 +90,6 @@ sort = "-Cover"
 
 [tool.coverage.html]
 show_contexts = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
