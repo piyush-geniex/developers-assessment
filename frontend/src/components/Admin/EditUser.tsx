@@ -41,6 +41,7 @@ const formSchema = z
       .optional()
       .or(z.literal("")),
     confirm_password: z.string().optional(),
+    hourly_rate: z.number().min(0, { message: "Rate must be 0 or more" }).optional(),
     is_superuser: z.boolean().optional(),
     is_active: z.boolean().optional(),
   })
@@ -68,6 +69,7 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
     defaultValues: {
       email: user.email,
       full_name: user.full_name ?? undefined,
+      hourly_rate: user.hourly_rate ?? undefined,
       is_superuser: user.is_superuser,
       is_active: user.is_active,
     },
@@ -179,6 +181,31 @@ const EditUser = ({ user, onSuccess }: EditUserProps) => {
                         placeholder="Password"
                         type="password"
                         {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="hourly_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hourly Rate ($/hr)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. 75.00"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={field.value ?? ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? undefined : parseFloat(e.target.value),
+                          )
+                        }
                       />
                     </FormControl>
                     <FormMessage />

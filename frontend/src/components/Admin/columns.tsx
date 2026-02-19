@@ -48,6 +48,18 @@ export const columns: ColumnDef<UserTableData>[] = [
     ),
   },
   {
+    accessorKey: "hourly_rate",
+    header: "Hourly Rate",
+    cell: ({ row }) => {
+      const rate = row.original.hourly_rate
+      return (
+        <span className="font-mono text-sm">
+          {rate != null ? `$${rate.toFixed(2)}/hr` : <span className="text-muted-foreground">—</span>}
+        </span>
+      )
+    },
+  },
+  {
     accessorKey: "is_active",
     header: "Status",
     cell: ({ row }) => (

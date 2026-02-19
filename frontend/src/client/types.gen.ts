@@ -66,6 +66,7 @@ export type UserCreate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    hourly_rate?: (number | null);
     password: string;
 };
 
@@ -74,6 +75,7 @@ export type UserPublic = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    hourly_rate?: (number | null);
     id: string;
 };
 
@@ -93,6 +95,7 @@ export type UserUpdate = {
     is_active?: boolean;
     is_superuser?: boolean;
     full_name?: (string | null);
+    hourly_rate?: (number | null);
     password?: (string | null);
 };
 
@@ -232,3 +235,144 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+// ---------------------------------------------------------------------------
+// Worklog types
+// ---------------------------------------------------------------------------
+
+export type WorklogCreate = {
+    title: string;
+    description?: (string | null);
+};
+
+export type TimeEntryPublic = {
+    start_time: string;
+    end_time: string;
+    description?: (string | null);
+    id: string;
+    worklog_id: string;
+    hours: number;
+    created_at: string;
+};
+
+export type WorklogPublic = {
+    title: string;
+    description?: (string | null);
+    id: string;
+    freelancer_id: string;
+    freelancer_name?: (string | null);
+    hourly_rate: number;
+    total_hours: number;
+    total_earned: number;
+    created_at: string;
+};
+
+export type WorklogDetail = WorklogPublic & {
+    time_entries: Array<TimeEntryPublic>;
+};
+
+export type WorklogsPublic = {
+    data: Array<WorklogPublic>;
+    count: number;
+};
+
+export type WorklogsReadWorklogsData = {
+    skip?: number;
+    limit?: number;
+    dateFrom?: (string | null);
+    dateTo?: (string | null);
+};
+
+export type WorklogsReadWorklogsResponse = (WorklogsPublic);
+
+export type WorklogsReadWorklogData = {
+    worklogId: string;
+};
+
+export type WorklogsReadWorklogResponse = (WorklogDetail);
+
+export type WorklogsCreateWorklogData = {
+    requestBody: WorklogCreate;
+};
+
+export type WorklogsCreateWorklogResponse = (WorklogPublic);
+
+// ---------------------------------------------------------------------------
+// Payment types
+// ---------------------------------------------------------------------------
+
+export type PaymentBatchCreate = {
+    date_from: string;
+    date_to: string;
+};
+
+export type EligibleEntry = {
+    time_entry_id: string;
+    worklog_id: string;
+    worklog_title: string;
+    freelancer_id: string;
+    freelancer_name?: (string | null);
+    hours: number;
+    hourly_rate: number;
+    amount: number;
+    start_time: string;
+    end_time: string;
+};
+
+export type PaymentBatchPublic = {
+    id: string;
+    date_from: string;
+    date_to: string;
+    status: string;
+    created_by_id: string;
+    total_amount?: (number | null);
+    created_at: string;
+    confirmed_at?: (string | null);
+};
+
+export type PaymentBatchDetail = PaymentBatchPublic & {
+    eligible_entries: Array<EligibleEntry>;
+    payment_lines: Array<EligibleEntry>;
+};
+
+export type PaymentBatchesPublic = {
+    data: Array<PaymentBatchPublic>;
+    count: number;
+};
+
+export type ConfirmBatchIn = {
+    excluded_worklog_ids?: Array<string>;
+    excluded_freelancer_ids?: Array<string>;
+};
+
+export type PaymentsReadBatchesData = {
+    skip?: number;
+    limit?: number;
+};
+
+export type PaymentsReadBatchesResponse = (PaymentBatchesPublic);
+
+export type PaymentsCreateBatchData = {
+    requestBody: PaymentBatchCreate;
+};
+
+export type PaymentsCreateBatchResponse = (PaymentBatchDetail);
+
+export type PaymentsReadBatchData = {
+    batchId: string;
+};
+
+export type PaymentsReadBatchResponse = (PaymentBatchDetail);
+
+export type PaymentsConfirmBatchData = {
+    batchId: string;
+    requestBody: ConfirmBatchIn;
+};
+
+export type PaymentsConfirmBatchResponse = (PaymentBatchPublic);
+
+export type PaymentsDeleteBatchData = {
+    batchId: string;
+};
+
+export type PaymentsDeleteBatchResponse = (Message);
