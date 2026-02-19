@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse, WorklogsReadWorklogsData, WorklogsReadWorklogsResponse, WorklogsReadWorklogData, WorklogsReadWorklogResponse, WorklogsCreateWorklogData, WorklogsCreateWorklogResponse, PaymentsReadBatchesData, PaymentsReadBatchesResponse, PaymentsCreateBatchData, PaymentsCreateBatchResponse, PaymentsReadBatchData, PaymentsReadBatchResponse, PaymentsConfirmBatchData, PaymentsConfirmBatchResponse, PaymentsDeleteBatchData, PaymentsDeleteBatchResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -463,6 +463,91 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class WorklogsService {
+    public static readWorklogs(data: WorklogsReadWorklogsData = {}): CancelablePromise<WorklogsReadWorklogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/worklogs/',
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                date_from: data.dateFrom,
+                date_to: data.dateTo,
+            },
+            errors: { 422: 'Validation Error' }
+        });
+    }
+
+    public static readWorklog(data: WorklogsReadWorklogData): CancelablePromise<WorklogsReadWorklogResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/worklogs/{worklog_id}',
+            path: { worklog_id: data.worklogId },
+            errors: { 422: 'Validation Error' }
+        });
+    }
+
+    public static createWorklog(data: WorklogsCreateWorklogData): CancelablePromise<WorklogsCreateWorklogResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/worklogs/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: { 422: 'Validation Error' }
+        });
+    }
+}
+
+export class PaymentsService {
+    public static readBatches(data: PaymentsReadBatchesData = {}): CancelablePromise<PaymentsReadBatchesResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/payments/batches',
+            query: { skip: data.skip, limit: data.limit },
+            errors: { 422: 'Validation Error' }
+        });
+    }
+
+    public static createBatch(data: PaymentsCreateBatchData): CancelablePromise<PaymentsCreateBatchResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/payments/batches',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: { 422: 'Validation Error' }
+        });
+    }
+
+    public static readBatch(data: PaymentsReadBatchData): CancelablePromise<PaymentsReadBatchResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/payments/batches/{batch_id}',
+            path: { batch_id: data.batchId },
+            errors: { 422: 'Validation Error' }
+        });
+    }
+
+    public static confirmBatch(data: PaymentsConfirmBatchData): CancelablePromise<PaymentsConfirmBatchResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/payments/batches/{batch_id}/confirm',
+            path: { batch_id: data.batchId },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: { 422: 'Validation Error' }
+        });
+    }
+
+    public static deleteBatch(data: PaymentsDeleteBatchData): CancelablePromise<PaymentsDeleteBatchResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/payments/batches/{batch_id}',
+            path: { batch_id: data.batchId },
+            errors: { 422: 'Validation Error' }
         });
     }
 }
