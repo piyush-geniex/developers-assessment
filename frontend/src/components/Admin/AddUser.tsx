@@ -42,6 +42,12 @@ const formSchema = z
     confirm_password: z
       .string()
       .min(1, { message: "Please confirm your password" }),
+    hourly_rate: z.preprocess(
+      (val) => (val === "" || val == null ? undefined : Number(val)),
+      z.number({ invalid_type_error: "Must be a number" })
+        .min(0, { message: "Rate must be 0 or more" })
+        .optional(),
+    ),
     is_superuser: z.boolean(),
     is_active: z.boolean(),
   })
@@ -178,6 +184,27 @@ const AddUser = () => {
                         type="password"
                         {...field}
                         required
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="hourly_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hourly Rate ($/hr)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. 75.00"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        {...field}
+                        value={field.value ?? ""}
                       />
                     </FormControl>
                     <FormMessage />
