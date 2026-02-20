@@ -51,6 +51,32 @@ export type PrivateUserCreate = {
     is_verified?: boolean;
 };
 
+export type TaskCreate = {
+    title: string;
+    description?: (string | null);
+};
+
+export type TaskItem = {
+    title: string;
+    description?: (string | null);
+    created_by_id: string;
+    created_at: string;
+    edited_at?: (string | null);
+    edited_by_id?: (string | null);
+    id: string;
+    total_amount?: string;
+};
+
+export type TaskItems = {
+    data: Array<TaskItem>;
+    count: number;
+};
+
+export type TaskUpdate = {
+    title?: (string | null);
+    description?: (string | null);
+};
+
 export type Token = {
     access_token: string;
     token_type?: string;
@@ -105,6 +131,59 @@ export type ValidationError = {
     loc: Array<(string | number)>;
     msg: string;
     type: string;
+};
+
+export type WorkLogEntries = {
+    data: Array<WorkLogEntryItem>;
+    count: number;
+};
+
+export type WorkLogEntryBulkDelete = {
+    entry_ids: Array<(string)>;
+};
+
+export type WorkLogEntryBulkPaymentInitiate = {
+    entry_ids: Array<(string)>;
+};
+
+export type WorkLogEntryCreate = {
+    title: string;
+    description?: (string | null);
+    task_id: string;
+    start_time?: string;
+    end_time?: string;
+    amount?: (number | string);
+};
+
+export type WorkLogEntryItem = {
+    title: string;
+    description?: (string | null);
+    created_by_id: string;
+    created_at?: string;
+    edited_at?: (string | null);
+    edited_by_id?: (string | null);
+    id: string;
+    task_id: string;
+    start_time: string;
+    end_time: string;
+    amount: string;
+    approved: boolean;
+    approved_date?: (string | null);
+    approved_by_id: (string | null);
+    payment_initiated: boolean;
+    payment_initiated_date?: (string | null);
+    initiated_by_id: (string | null);
+    payment_date?: (string | null);
+    paid: boolean;
+};
+
+export type WorkLogEntryUpdate = {
+    title: string;
+    description?: (string | null);
+    task_id: string;
+    start_time?: string;
+    end_time?: string;
+    amount?: (number | string);
 };
 
 export type ItemsReadItemsData = {
@@ -170,6 +249,114 @@ export type PrivateCreateUserData = {
 };
 
 export type PrivateCreateUserResponse = (UserPublic);
+
+export type TasksReadWorkLogsData = {
+    endTime?: (string | null);
+    limit?: number;
+    skip?: number;
+    startTime?: (string | null);
+    taskId: string;
+};
+
+export type TasksReadWorkLogsResponse = (WorkLogEntries);
+
+export type TasksCreateWorkLogData = {
+    requestBody: WorkLogEntryCreate;
+    taskId: string;
+};
+
+export type TasksCreateWorkLogResponse = (WorkLogEntryItem);
+
+export type TasksReadWorkLogData = {
+    taskId: string;
+    workLogId: string;
+};
+
+export type TasksReadWorkLogResponse = (WorkLogEntryItem);
+
+export type TasksUpdateWorkLogData = {
+    requestBody: WorkLogEntryUpdate;
+    taskId: string;
+    workLogId: string;
+};
+
+export type TasksUpdateWorkLogResponse = (WorkLogEntryItem);
+
+export type TasksDeleteWorkLogData = {
+    taskId: string;
+    workLogId: string;
+};
+
+export type TasksDeleteWorkLogResponse = (Message);
+
+export type TasksApproveWorkLogData = {
+    taskId: string;
+    workLogId: string;
+};
+
+export type TasksApproveWorkLogResponse = (WorkLogEntryItem);
+
+export type TasksInitiatePaymentData = {
+    taskId: string;
+    workLogId: string;
+};
+
+export type TasksInitiatePaymentResponse = (WorkLogEntryItem);
+
+export type TasksReadAllWorkLogsData = {
+    endTime?: (string | null);
+    limit?: number;
+    skip?: number;
+    startTime?: (string | null);
+};
+
+export type TasksReadAllWorkLogsResponse = (WorkLogEntries);
+
+export type TasksInitiatePaymentsData = {
+    requestBody: WorkLogEntryBulkPaymentInitiate;
+};
+
+export type TasksInitiatePaymentsResponse = (Message);
+
+export type TasksBulkDeleteData = {
+    requestBody: WorkLogEntryBulkDelete;
+};
+
+export type TasksBulkDeleteResponse = (Message);
+
+export type TasksReadTasksData = {
+    endDate?: (string | null);
+    limit?: number;
+    skip?: number;
+    startDate?: (string | null);
+};
+
+export type TasksReadTasksResponse = (TaskItems);
+
+export type TasksCreateTaskData = {
+    requestBody: TaskCreate;
+};
+
+export type TasksCreateTaskResponse = (TaskItem);
+
+export type TasksReadTaskData = {
+    taskId: string;
+};
+
+export type TasksReadTaskResponse = (TaskItem);
+
+export type TasksUpdateTaskData = {
+    requestBody: TaskUpdate;
+    taskId: string;
+};
+
+export type TasksUpdateTaskResponse = (TaskItem);
+
+export type TasksDeleteTaskData = {
+    taskId: string;
+};
+
+export type TasksDeleteTaskResponse = (Message);
 
 export type UsersReadUsersData = {
     limit?: number;

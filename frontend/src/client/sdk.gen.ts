@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
+import type { ItemsReadItemsData, ItemsReadItemsResponse, ItemsCreateItemData, ItemsCreateItemResponse, ItemsReadItemData, ItemsReadItemResponse, ItemsUpdateItemData, ItemsUpdateItemResponse, ItemsDeleteItemData, ItemsDeleteItemResponse, LoginLoginAccessTokenData, LoginLoginAccessTokenResponse, LoginTestTokenResponse, LoginRecoverPasswordData, LoginRecoverPasswordResponse, LoginResetPasswordData, LoginResetPasswordResponse, LoginRecoverPasswordHtmlContentData, LoginRecoverPasswordHtmlContentResponse, PrivateCreateUserData, PrivateCreateUserResponse, TasksReadWorkLogsData, TasksReadWorkLogsResponse, TasksCreateWorkLogData, TasksCreateWorkLogResponse, TasksReadWorkLogData, TasksReadWorkLogResponse, TasksUpdateWorkLogData, TasksUpdateWorkLogResponse, TasksDeleteWorkLogData, TasksDeleteWorkLogResponse, TasksApproveWorkLogData, TasksApproveWorkLogResponse, TasksInitiatePaymentData, TasksInitiatePaymentResponse, TasksReadAllWorkLogsData, TasksReadAllWorkLogsResponse, TasksInitiatePaymentsData, TasksInitiatePaymentsResponse, TasksBulkDeleteData, TasksBulkDeleteResponse, TasksReadTasksData, TasksReadTasksResponse, TasksCreateTaskData, TasksCreateTaskResponse, TasksReadTaskData, TasksReadTaskResponse, TasksUpdateTaskData, TasksUpdateTaskResponse, TasksDeleteTaskData, TasksDeleteTaskResponse, UsersReadUsersData, UsersReadUsersResponse, UsersCreateUserData, UsersCreateUserResponse, UsersReadUserMeResponse, UsersDeleteUserMeResponse, UsersUpdateUserMeData, UsersUpdateUserMeResponse, UsersUpdatePasswordMeData, UsersUpdatePasswordMeResponse, UsersRegisterUserData, UsersRegisterUserResponse, UsersReadUserByIdData, UsersReadUserByIdResponse, UsersUpdateUserData, UsersUpdateUserResponse, UsersDeleteUserData, UsersDeleteUserResponse, UtilsTestEmailData, UtilsTestEmailResponse, UtilsHealthCheckResponse } from './types.gen';
 
 export class ItemsService {
     /**
@@ -228,6 +228,365 @@ export class PrivateService {
             url: '/api/v1/private/users/',
             body: data.requestBody,
             mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
+
+export class TasksService {
+    /**
+     * Read Work Logs
+     * Retrieve work log entries for a task.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.skip
+     * @param data.limit
+     * @param data.startTime
+     * @param data.endTime
+     * @returns WorkLogEntries Successful Response
+     * @throws ApiError
+     */
+    public static readWorkLogs(data: TasksReadWorkLogsData): CancelablePromise<TasksReadWorkLogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/{task_id}/work-logs/',
+            path: {
+                task_id: data.taskId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                start_time: data.startTime,
+                end_time: data.endTime
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Work Log
+     * Create new work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.requestBody
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static createWorkLog(data: TasksCreateWorkLogData): CancelablePromise<TasksCreateWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/{task_id}/work-logs/',
+            path: {
+                task_id: data.taskId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Work Log
+     * Get work log entry by ID.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static readWorkLog(data: TasksReadWorkLogData): CancelablePromise<TasksReadWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Work Log
+     * Update a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @param data.requestBody
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static updateWorkLog(data: TasksUpdateWorkLogData): CancelablePromise<TasksUpdateWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Work Log
+     * Delete a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteWorkLog(data: TasksDeleteWorkLogData): CancelablePromise<TasksDeleteWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Approve Work Log
+     * Approve a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static approveWorkLog(data: TasksApproveWorkLogData): CancelablePromise<TasksApproveWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}/approve',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Initiate Payment
+     * Initiate payment for a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static initiatePayment(data: TasksInitiatePaymentData): CancelablePromise<TasksInitiatePaymentResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}/initiate-payment',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read All Work Logs
+     * Retrieve all work log entries across all tasks.
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @param data.startTime
+     * @param data.endTime
+     * @returns WorkLogEntries Successful Response
+     * @throws ApiError
+     */
+    public static readAllWorkLogs(data: TasksReadAllWorkLogsData = {}): CancelablePromise<TasksReadAllWorkLogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/work-logs',
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                start_time: data.startTime,
+                end_time: data.endTime
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Initiate Payments
+     * Initiate payment for multiple work log entries.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static initiatePayments(data: TasksInitiatePaymentsData): CancelablePromise<TasksInitiatePaymentsResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/work-logs/bulk-initiate-payment',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Bulk Delete
+     * Delete multiple work log entries.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static bulkDelete(data: TasksBulkDeleteData): CancelablePromise<TasksBulkDeleteResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/tasks/work-logs/delete',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Tasks
+     * Retrieve tasks.
+     *
+     * Optional date filters:
+     * - start_date: Filter tasks created on or after this date
+     * - end_date: Filter tasks created on or before this date
+     * @param data The data for the request.
+     * @param data.skip
+     * @param data.limit
+     * @param data.startDate
+     * @param data.endDate
+     * @returns TaskItems Successful Response
+     * @throws ApiError
+     */
+    public static readTasks(data: TasksReadTasksData = {}): CancelablePromise<TasksReadTasksResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/',
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                start_date: data.startDate,
+                end_date: data.endDate
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Task
+     * Create new task.
+     * @param data The data for the request.
+     * @param data.requestBody
+     * @returns TaskItem Successful Response
+     * @throws ApiError
+     */
+    public static createTask(data: TasksCreateTaskData): CancelablePromise<TasksCreateTaskResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/',
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Task
+     * Get task by ID.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @returns TaskItem Successful Response
+     * @throws ApiError
+     */
+    public static readTask(data: TasksReadTaskData): CancelablePromise<TasksReadTaskResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/{task_id}',
+            path: {
+                task_id: data.taskId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Task
+     * Update a task.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.requestBody
+     * @returns TaskItem Successful Response
+     * @throws ApiError
+     */
+    public static updateTask(data: TasksUpdateTaskData): CancelablePromise<TasksUpdateTaskResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/tasks/{task_id}',
+            path: {
+                task_id: data.taskId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Task
+     * Delete a task.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static deleteTask(data: TasksDeleteTaskData): CancelablePromise<TasksDeleteTaskResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/tasks/{task_id}',
+            path: {
+                task_id: data.taskId
+            },
             errors: {
                 422: 'Validation Error'
             }
@@ -463,6 +822,181 @@ export class UtilsService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/utils/health-check/'
+        });
+    }
+}
+
+export class WorkLogsService {
+    /**
+     * Read Work Logs
+     * Retrieve work log entries for a task.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.skip
+     * @param data.limit
+     * @param data.startTime
+     * @param data.endTime
+     * @returns WorkLogEntries Successful Response
+     * @throws ApiError
+     */
+    public static tasksReadWorkLogs(data: TasksReadWorkLogsData): CancelablePromise<TasksReadWorkLogsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/{task_id}/work-logs/',
+            path: {
+                task_id: data.taskId
+            },
+            query: {
+                skip: data.skip,
+                limit: data.limit,
+                start_time: data.startTime,
+                end_time: data.endTime
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Create Work Log
+     * Create new work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.requestBody
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static tasksCreateWorkLog(data: TasksCreateWorkLogData): CancelablePromise<TasksCreateWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/{task_id}/work-logs/',
+            path: {
+                task_id: data.taskId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Read Work Log
+     * Get work log entry by ID.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static tasksReadWorkLog(data: TasksReadWorkLogData): CancelablePromise<TasksReadWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Update Work Log
+     * Update a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @param data.requestBody
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static tasksUpdateWorkLog(data: TasksUpdateWorkLogData): CancelablePromise<TasksUpdateWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            body: data.requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Delete Work Log
+     * Delete a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static tasksDeleteWorkLog(data: TasksDeleteWorkLogData): CancelablePromise<TasksDeleteWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Approve Work Log
+     * Approve a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static tasksApproveWorkLog(data: TasksApproveWorkLogData): CancelablePromise<TasksApproveWorkLogResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}/approve',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+    
+    /**
+     * Initiate Payment
+     * Initiate payment for a work log entry.
+     * @param data The data for the request.
+     * @param data.taskId
+     * @param data.workLogId
+     * @returns WorkLogEntryItem Successful Response
+     * @throws ApiError
+     */
+    public static tasksInitiatePayment(data: TasksInitiatePaymentData): CancelablePromise<TasksInitiatePaymentResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tasks/{task_id}/work-logs/{work_log_id}/initiate-payment',
+            path: {
+                task_id: data.taskId,
+                work_log_id: data.workLogId
+            },
+            errors: {
+                422: 'Validation Error'
+            }
         });
     }
 }
