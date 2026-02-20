@@ -73,7 +73,7 @@ class TaskService:
         if end_date is not None:
             agg_stmt = agg_stmt.where(Task.created_at <= end_date)
 
-        agg_stmt = agg_stmt.offset(skip).limit(limit)
+        agg_stmt = agg_stmt.order_by(Task.created_at.desc()).offset(skip).limit(limit)
 
         rows = session.exec(agg_stmt).all()
         tasks: list[TaskItem] = []
